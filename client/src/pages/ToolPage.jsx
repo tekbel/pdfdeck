@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { findTool } from '../lib/tools.js'
 
@@ -44,6 +44,69 @@ function renderMarkdown(text) {
 
 const IMAGE_FORMATS = ['webp', 'jpg', 'png', 'avif', 'gif']
 
+function wordCount(text) {
+  return text.trim().split(/\s+/).length
+}
+
+function SummaryResult({ summary, filename, onReset }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(async () => {
+    await navigator.clipboard.writeText(summary)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [summary])
+
+  const handleDownload = useCallback(() => {
+    const blob = new Blob([summary], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename ? `summary-${filename.replace(/\.pdf$/i, '')}.txt` : 'summary.txt'
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [summary, filename])
+
+  return (
+    <div className="summary-box">
+      <div className="summary-meta">
+        <span>{wordCount(summary)} words</span>
+        <div className="summary-actions">
+          <button className="summary-btn" onClick={handleCopy}>
+            {copied ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Copied
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Copy
+              </>
+            )}
+          </button>
+          <button className="summary-btn" onClick={handleDownload}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            Download .txt
+          </button>
+        </div>
+      </div>
+      {renderMarkdown(summary)}
+      <button className="btn-primary" style={{ marginTop: 24 }} onClick={onReset}>
+        Summarize another
+      </button>
+    </div>
+  )
+}
+
 export default function ToolPage() {
   const { slug } = useParams()
   const tool = findTool(slug)
@@ -55,6 +118,9 @@ export default function ToolPage() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [imageFormat, setImageFormat] = useState('webp')
+  const [pageRange, setPageRange] = useState('')
+  const [resizeWidth, setResizeWidth] = useState('')
+  const [resizeHeight, setResizeHeight] = useState('')
 
   if (!tool) {
     return (
@@ -85,6 +151,11 @@ export default function ToolPage() {
       const body = new FormData()
       files.forEach(f => body.append('files', f))
       if (slug === 'image-converter') body.append('targetFormat', imageFormat)
+      if (slug === 'split-pdf' && pageRange.trim()) body.append('pageRange', pageRange.trim())
+      if (slug === 'resize-image') {
+        if (resizeWidth)  body.append('width', resizeWidth)
+        if (resizeHeight) body.append('height', resizeHeight)
+      }
 
       const res = await fetch(`/api/tools/${slug}`, { method: 'POST', body })
       clearInterval(tick)
@@ -139,6 +210,35 @@ export default function ToolPage() {
         />
       </div>
 
+      {slug === 'split-pdf' && (
+        <div className="page-range-wrap">
+          <label htmlFor="page-range">Pages to extract</label>
+          <input
+            id="page-range"
+            className="page-range-input"
+            type="text"
+            placeholder="e.g. 1-3, 5, 8-10"
+            value={pageRange}
+            onChange={e => setPageRange(e.target.value)}
+          />
+          <span className="page-range-hint">Leave blank to split into individual pages</span>
+        </div>
+      )}
+
+      {slug === 'resize-image' && (
+        <div className="page-range-wrap">
+          <label>Dimensions (px)</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input className="page-range-input" type="number" placeholder="Width" min="1"
+              value={resizeWidth} onChange={e => setResizeWidth(e.target.value)} style={{ width: 100 }} />
+            <span style={{ color: 'var(--ink-faint)', fontSize: 13 }}>×</span>
+            <input className="page-range-input" type="number" placeholder="Height" min="1"
+              value={resizeHeight} onChange={e => setResizeHeight(e.target.value)} style={{ width: 100 }} />
+          </div>
+          <span className="page-range-hint">Leave one blank to scale proportionally</span>
+        </div>
+      )}
+
       {slug === 'image-converter' && (
         <div className="format-selector">
           <span>Convert to</span>
@@ -186,12 +286,11 @@ export default function ToolPage() {
       )}
 
       {status === 'done' && result?.summary && (
-        <div className="summary-box">
-          {renderMarkdown(result.summary)}
-          <button className="btn-primary" style={{ marginTop: 24 }} onClick={() => { setStatus('idle'); setResult(null); setFiles([]) }}>
-            Summarize another
-          </button>
-        </div>
+        <SummaryResult
+          summary={result.summary}
+          filename={files[0]?.name}
+          onReset={() => { setStatus('idle'); setResult(null); setFiles([]) }}
+        />
       )}
 
       {status !== 'done' && (

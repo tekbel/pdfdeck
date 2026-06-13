@@ -113,6 +113,46 @@ async function mergePdf(files) {
   return pollJob(data.id, apiKey)
 }
 
+function imageExt(file) {
+  const raw = file.originalname.split('.').pop().toLowerCase()
+  return raw === 'jpeg' ? 'jpg' : raw || 'jpg'
+}
+
+async function compressImage(files) {
+  const apiKey = process.env.CLOUDCONVERT_API_KEY
+  if (!apiKey) throw new Error('CLOUDCONVERT_API_KEY not configured')
+  const ext = imageExt(files[0])
+  const { data } = await createJob({
+    'import-file':   { operation: 'import/upload' },
+    'optimize-file': { operation: 'optimize', input: 'import-file', input_format: ext, output_format: ext },
+    'export-file':   { operation: 'export/url', input: 'optimize-file' },
+  }, apiKey)
+  await uploadToTask(data.tasks.find(t => t.name === 'import-file'), files[0])
+  return pollJob(data.id, apiKey)
+}
+
+async function resizeImage(files, width, height) {
+  const apiKey = process.env.CLOUDCONVERT_API_KEY
+  if (!apiKey) throw new Error('CLOUDCONVERT_API_KEY not configured')
+  const ext = imageExt(files[0])
+  const convertTask = {
+    operation: 'convert',
+    input: 'import-file',
+    input_format: ext,
+    output_format: ext,
+    fit: 'max',
+  }
+  if (width)  convertTask.width  = parseInt(width)
+  if (height) convertTask.height = parseInt(height)
+  const { data } = await createJob({
+    'import-file':  { operation: 'import/upload' },
+    'convert-file': convertTask,
+    'export-file':  { operation: 'export/url', input: 'convert-file' },
+  }, apiKey)
+  await uploadToTask(data.tasks.find(t => t.name === 'import-file'), files[0])
+  return pollJob(data.id, apiKey)
+}
+
 async function convertImage(files, targetFormat) {
   const apiKey = process.env.CLOUDCONVERT_API_KEY
   if (!apiKey) throw new Error('CLOUDCONVERT_API_KEY not configured')
@@ -120,6 +160,27 @@ async function convertImage(files, targetFormat) {
   const { data } = await createJob({
     'import-file':  { operation: 'import/upload' },
     'convert-file': { operation: 'convert', input: 'import-file', output_format: to },
+    'export-file':  { operation: 'export/url', input: 'convert-file' },
+  }, apiKey)
+  await uploadToTask(data.tasks.find(t => t.name === 'import-file'), files[0])
+  return pollJob(data.id, apiKey)
+}
+
+async function splitPdf(files, pageRange) {
+  const apiKey = process.env.CLOUDCONVERT_API_KEY
+  if (!apiKey) throw new Error('CLOUDCONVERT_API_KEY not configured')
+
+  const convertTask = {
+    operation: 'convert',
+    input: 'import-file',
+    input_format: 'pdf',
+    output_format: 'pdf',
+  }
+  if (pageRange) convertTask.pages = pageRange
+
+  const { data } = await createJob({
+    'import-file':  { operation: 'import/upload' },
+    'convert-file': convertTask,
     'export-file':  { operation: 'export/url', input: 'convert-file' },
   }, apiKey)
   await uploadToTask(data.tasks.find(t => t.name === 'import-file'), files[0])
@@ -162,6 +223,9 @@ router.post('/:slug', rateLimit, upload.array('files', 20), async (req, res) => 
       if (req.files.length < 2) return res.status(400).json({ error: 'Upload at least 2 PDFs to merge' })
       return res.json(await mergePdf(req.files))
     }
+    if (slug === 'split-pdf')       return res.json(await splitPdf(req.files, req.body.pageRange))
+    if (slug === 'compress-image')  return res.json(await compressImage(req.files))
+    if (slug === 'resize-image')    return res.json(await resizeImage(req.files, req.body.width, req.body.height))
     if (slug === 'image-converter') return res.json(await convertImage(req.files, req.body.targetFormat))
     if (CC_CONVERT[slug]) return res.json(await convertFile(slug, req.files))
 
