@@ -9,7 +9,7 @@ const upload = multer({
 
 // ---- Rate limiting (per-IP, in-memory; swap for Supabase in production) ----
 const usage = new Map()
-const FREE_DAILY_LIMIT = 10
+const FREE_DAILY_LIMIT = 3
 
 function rateLimit(req, res, next) {
   const key = req.ip + ':' + new Date().toISOString().slice(0, 10)
@@ -187,6 +187,79 @@ async function splitPdf(files, pageRange) {
   return pollJob(data.id, apiKey)
 }
 
+async function claudeChat(files, question) {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  if (!question?.trim()) throw new Error('Please enter a question')
+  const pdfBase64 = files[0].buffer.toString('base64')
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+          { type: 'text', text: `Answer the following question based on the document above. Cite the relevant section or page if possible.\n\nQuestion: ${question.trim()}` },
+        ],
+      }],
+    }),
+  })
+  if (!res.ok) throw new Error('AI service unavailable')
+  const data = await res.json()
+  return { answer: data.content.filter(b => b.type === 'text').map(b => b.text).join('\n') }
+}
+
+async function claudeExtract(files) {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  const pdfBase64 = files[0].buffer.toString('base64')
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+          { type: 'text', text: 'Extract all tables and structured data from this document and format them as CSV. Use comma separation and quote fields that contain commas. Include headers. If there are multiple tables, separate them with a blank line and a comment row like "# Table: [name]". Return only the CSV data, no explanation.' },
+        ],
+      }],
+    }),
+  })
+  if (!res.ok) throw new Error('AI service unavailable')
+  const data = await res.json()
+  return { csv: data.content.filter(b => b.type === 'text').map(b => b.text).join('\n') }
+}
+
+async function claudeOcr(files) {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  const pdfBase64 = files[0].buffer.toString('base64')
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8096,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+          { type: 'text', text: 'Extract all text from this document exactly as it appears. Preserve the structure, headings, and paragraphs as best you can. Return only the extracted text, no commentary.' },
+        ],
+      }],
+    }),
+  })
+  if (!res.ok) throw new Error('AI service unavailable')
+  const data = await res.json()
+  return { text: data.content.filter(b => b.type === 'text').map(b => b.text).join('\n') }
+}
+
 async function claudeSummarize(files) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
@@ -218,6 +291,9 @@ router.post('/:slug', rateLimit, upload.array('files', 20), async (req, res) => 
     if (!req.files?.length) return res.status(400).json({ error: 'No file uploaded' })
 
     if (slug === 'summarize-pdf') return res.json(await claudeSummarize(req.files))
+    if (slug === 'chat-with-pdf') return res.json(await claudeChat(req.files, req.body.question))
+    if (slug === 'extract-data')  return res.json(await claudeExtract(req.files))
+    if (slug === 'ocr-pdf')       return res.json(await claudeOcr(req.files))
     if (slug === 'compress-pdf')  return res.json(await compressPdf(req.files))
     if (slug === 'merge-pdf') {
       if (req.files.length < 2) return res.status(400).json({ error: 'Upload at least 2 PDFs to merge' })

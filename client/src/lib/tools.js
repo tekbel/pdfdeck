@@ -1,10 +1,8 @@
-// FileDeck tool catalog — Phase 1 launch set.
-// Each tool gets its own SEO route at /:slug
-
 export const DECKS = [
   {
     id: 'pdf',
     name: 'PDF Deck',
+    color: '#C0392B',
     tools: [
       { slug: 'pdf-to-word', name: 'PDF to Word', icon: '📄', desc: 'Convert PDF to editable DOCX, layout preserved.', accept: '.pdf', kind: 'convert' },
       { slug: 'word-to-pdf', name: 'Word to PDF', icon: '📝', desc: 'Turn DOC or DOCX into a clean PDF.', accept: '.doc,.docx', kind: 'convert' },
@@ -19,6 +17,7 @@ export const DECKS = [
   {
     id: 'image',
     name: 'Image Deck',
+    color: '#1A5FBF',
     tools: [
       { slug: 'image-converter', name: 'Image Converter', icon: '🔄', desc: 'PNG, JPG, WebP, HEIC, AVIF — convert any to any.', accept: 'image/*', kind: 'convert' },
       { slug: 'compress-image', name: 'Compress Image', icon: '📉', desc: 'Smaller files, same look. Tuned per image.', accept: 'image/*', kind: 'compress', multi: true },
@@ -29,15 +28,18 @@ export const DECKS = [
   {
     id: 'ai',
     name: 'AI Deck',
+    color: '#0D7377',
     ai: true,
     tools: [
-      { slug: 'summarize-pdf', name: 'Summarize PDF', icon: '✨', desc: 'Key points from any document in seconds.', accept: '.pdf', kind: 'ai', ai: true },
-      { slug: 'chat-with-pdf', name: 'Chat with PDF', icon: '💬', desc: 'Ask your document questions, get cited answers.', accept: '.pdf', kind: 'ai', ai: true },
-      { slug: 'extract-data', name: 'Extract Data', icon: '🧾', desc: 'Invoices and tables out of PDFs, into CSV.', accept: '.pdf', kind: 'ai', ai: true },
-      { slug: 'ocr-pdf', name: 'OCR PDF', icon: '🔍', desc: 'Make scanned documents searchable and selectable.', accept: '.pdf,image/*', kind: 'ai', ai: true },
+      { slug: 'summarize-pdf', name: 'Summarize PDF', icon: '✨', desc: 'Key points from any document in seconds.', accept: '.pdf', kind: 'ai', ai: true, pro: true },
+      { slug: 'chat-with-pdf', name: 'Chat with PDF', icon: '💬', desc: 'Ask your document questions, get cited answers.', accept: '.pdf', kind: 'ai', ai: true, pro: true },
+      { slug: 'extract-data', name: 'Extract Data', icon: '🧾', desc: 'Invoices and tables out of PDFs, into CSV.', accept: '.pdf', kind: 'ai', ai: true, pro: true },
+      { slug: 'ocr-pdf', name: 'OCR PDF', icon: '🔍', desc: 'Extract all text from scanned PDFs and images.', accept: '.pdf,image/*', kind: 'ai', ai: true, pro: true },
     ],
   },
 ]
 
 export const ALL_TOOLS = DECKS.flatMap(d => d.tools)
 export const findTool = slug => ALL_TOOLS.find(t => t.slug === slug)
+export const toolHref = tool => `/${tool.slug}`
+export const DECK_COLORS = Object.fromEntries(DECKS.map(d => [d.id, d.color]))

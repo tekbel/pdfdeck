@@ -1,12 +1,43 @@
+import { Link } from 'react-router-dom'
+import { DECKS, toolHref } from '../lib/tools.js'
+import Logo from './Logo.jsx'
+
 export default function Footer() {
   return (
     <footer className="footer">
-      <div className="container footer-inner">
-        <span>© 2025 PDF Deck. Every file tool in one place.</span>
-        <span>Files are processed in memory and never stored on our servers.</span>
-        <span>
-          <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
-        </span>
+      <div className="container footer-top">
+        <div className="footer-brand-col">
+          <div className="footer-brand">
+            <Logo size={22} />
+            PDF Deck
+          </div>
+          <p className="footer-tagline">Fast PDF and image tools, right in your browser. No account, no limits.</p>
+        </div>
+
+        {DECKS.map(deck => (
+          <div key={deck.id} className="footer-tool-col">
+            <h4 className="footer-col-label" style={{ color: deck.color }}>{deck.name}</h4>
+            <ul className="footer-tool-list">
+              {deck.tools.map(tool => (
+                <li key={tool.slug}>
+                  <Link to={toolHref(tool)}>{tool.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+        <div className="footer-tool-col">
+          <h4 className="footer-col-label">Company</h4>
+          <ul className="footer-tool-list">
+            <li><Link to="/pricing">Pricing</Link></li>
+            <li><a href="mailto:hello@pdfdeck.app">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="container footer-copy">
+        © 2026 PDF Deck. Files processed in memory and never stored on our servers.
       </div>
     </footer>
   )

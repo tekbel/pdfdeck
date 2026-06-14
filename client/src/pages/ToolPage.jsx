@@ -1,6 +1,15 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { findTool } from '../lib/tools.js'
+
+const Breadcrumb = () => (
+  <Link to="/" className="breadcrumb">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+    All tools
+  </Link>
+)
 
 const fmtSize = b => b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.ceil(b / 1024)} KB`
 
@@ -26,7 +35,7 @@ function renderMarkdown(text) {
       flushList()
       out.push(<h3 key={i}>{line.replace(/^#{2,3} /, '')}</h3>)
     } else if (/^[-–]\s/.test(line)) {
-      listItems.push(<li key={i}>{parseBold(line.replace(/^[-–]\s/, ''))}</li>)
+      listItems.push(<li key={i}><span>{parseBold(line.replace(/^[-–]\s/, ''))}</span></li>)
     } else if (!line.trim()) {
       flushList()
     } else if (/^\*\*.*\*\*$/.test(line.trim())) {
@@ -48,29 +57,32 @@ function wordCount(text) {
   return text.trim().split(/\s+/).length
 }
 
-function SummaryResult({ summary, filename, onReset }) {
+function TextResult({ text, downloadName, downloadMime = 'text/plain', resetLabel = 'Start over', onReset }) {
   const [copied, setCopied] = useState(false)
+  const rendered = useMemo(() => renderMarkdown(text), [text])
 
   const handleCopy = useCallback(async () => {
-    await navigator.clipboard.writeText(summary)
+    await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }, [summary])
+  }, [text])
 
   const handleDownload = useCallback(() => {
-    const blob = new Blob([summary], { type: 'text/plain' })
+    const blob = new Blob([text], { type: downloadMime })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = filename ? `summary-${filename.replace(/\.pdf$/i, '')}.txt` : 'summary.txt'
+    a.download = downloadName
     a.click()
     URL.revokeObjectURL(url)
-  }, [summary, filename])
+  }, [text, downloadName, downloadMime])
+
+  const ext = downloadName?.split('.').pop().toUpperCase() || 'TXT'
 
   return (
     <div className="summary-box">
       <div className="summary-meta">
-        <span>{wordCount(summary)} words</span>
+        <span>{wordCount(text)} words</span>
         <div className="summary-actions">
           <button className="summary-btn" onClick={handleCopy}>
             {copied ? (
@@ -95,13 +107,13 @@ function SummaryResult({ summary, filename, onReset }) {
               <path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            Download .txt
+            Download .{ext.toLowerCase()}
           </button>
         </div>
       </div>
-      {renderMarkdown(summary)}
+      {rendered}
       <button className="btn-primary" style={{ marginTop: 24 }} onClick={onReset}>
-        Summarize another
+        {resetLabel}
       </button>
     </div>
   )
@@ -121,12 +133,42 @@ export default function ToolPage() {
   const [pageRange, setPageRange] = useState('')
   const [resizeWidth, setResizeWidth] = useState('')
   const [resizeHeight, setResizeHeight] = useState('')
+  const [question, setQuestion] = useState('')
+
+  useEffect(() => {
+    document.title = tool ? `${tool.name} — PDF Deck` : 'PDF Deck'
+  }, [tool])
 
   if (!tool) {
     return (
       <main className="tool-page container">
-        <h1>Tool not found</h1>
-        <p className="tool-sub">That tool isn't in the deck yet. <Link to="/" style={{ color: 'var(--brand)' }}>Browse all tools</Link></p>
+        <Breadcrumb />
+        <h1>Page not found</h1>
+        <p className="tool-sub">That page doesn't exist. <Link to="/" style={{ color: 'var(--brand)' }}>Browse all tools</Link></p>
+      </main>
+    )
+  }
+
+  if (tool.pro) {
+    return (
+      <main className="tool-page container">
+        <Breadcrumb />
+        <div className="pro-gate">
+          <div className="pro-gate-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+              <rect x="6" y="12" width="16" height="13" rx="2.5" stroke="var(--brand)" strokeWidth="1.8"/>
+              <path d="M9 12V9a5 5 0 0110 0v3" stroke="var(--brand)" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <span className="pro-gate-label">Pro feature</span>
+          <h1>{tool.name}</h1>
+          <p className="tool-sub">{tool.desc}</p>
+          {tool.comingSoon && <p className="coming-soon-note">This tool is also still in development.</p>}
+          <Link to="/pricing" className="btn-primary" style={{ textDecoration: 'none' }}>
+            Upgrade to Pro
+          </Link>
+          <Link to="/" className="btn-ghost">Browse free tools</Link>
+        </div>
       </main>
     )
   }
@@ -152,6 +194,7 @@ export default function ToolPage() {
       files.forEach(f => body.append('files', f))
       if (slug === 'image-converter') body.append('targetFormat', imageFormat)
       if (slug === 'split-pdf' && pageRange.trim()) body.append('pageRange', pageRange.trim())
+      if (slug === 'chat-with-pdf') body.append('question', question.trim())
       if (slug === 'resize-image') {
         if (resizeWidth)  body.append('width', resizeWidth)
         if (resizeHeight) body.append('height', resizeHeight)
@@ -178,6 +221,7 @@ export default function ToolPage() {
 
   return (
     <main className="tool-page container">
+      <Breadcrumb />
       <h1>{tool.name}</h1>
       <p className="tool-sub">{tool.desc}</p>
 
@@ -209,6 +253,21 @@ export default function ToolPage() {
           onChange={e => addFiles(e.target.files)}
         />
       </div>
+
+      {slug === 'chat-with-pdf' && (
+        <div className="page-range-wrap">
+          <label htmlFor="pdf-question">Your question</label>
+          <textarea
+            id="pdf-question"
+            className="page-range-input"
+            rows={3}
+            placeholder="What is the main conclusion of this report?"
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            style={{ resize: 'vertical', minHeight: 72 }}
+          />
+        </div>
+      )}
 
       {slug === 'split-pdf' && (
         <div className="page-range-wrap">
@@ -259,7 +318,23 @@ export default function ToolPage() {
           {files.map((f, i) => (
             <div className="file-row" key={i}>
               <span>{f.name}</span>
-              <span className="f-size">{fmtSize(f.size)}</span>
+              <div className="f-row-right">
+                <span className="f-size">{fmtSize(f.size)}</span>
+                <button
+                  className="f-remove"
+                  aria-label={`Remove ${f.name}`}
+                  onClick={() => {
+                    setFiles(files.filter((_, j) => j !== i))
+                    setStatus('idle')
+                    setResult(null)
+                    setError('')
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -273,29 +348,72 @@ export default function ToolPage() {
 
       {status === 'error' && (
         <p style={{ color: 'var(--red)', margin: '20px 0', fontSize: 14 }}>
-          {error} — check the file and try again.
+          {error}
         </p>
       )}
 
       {status === 'done' && result?.downloadUrl && (
-        <div style={{ textAlign: 'center', margin: '28px 0' }}>
+        <div className="result-card">
+          <div className="result-success">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="10" stroke="var(--green)" strokeWidth="1.5"/>
+              <path d="M7 11.5l2.5 2.5 5.5-5.5" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Your file is ready
+          </div>
           <a className="btn-primary" href={result.downloadUrl} download>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 2v8M5 7l3 3 3-3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12.5v.5a1 1 0 001 1h10a1 1 0 001-1v-.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
             Download result
           </a>
+          <button className="btn-ghost" onClick={() => { setStatus('idle'); setResult(null); setFiles([]) }}>
+            Convert another file
+          </button>
         </div>
       )}
 
       {status === 'done' && result?.summary && (
-        <SummaryResult
-          summary={result.summary}
-          filename={files[0]?.name}
+        <TextResult
+          text={result.summary}
+          downloadName={files[0] ? `summary-${files[0].name.replace(/\.pdf$/i, '')}.txt` : 'summary.txt'}
+          resetLabel="Summarize another"
+          onReset={() => { setStatus('idle'); setResult(null); setFiles([]) }}
+        />
+      )}
+
+      {status === 'done' && result?.answer && (
+        <TextResult
+          text={result.answer}
+          downloadName="answer.txt"
+          resetLabel="Ask another question"
+          onReset={() => { setStatus('idle'); setResult(null); setQuestion('') }}
+        />
+      )}
+
+      {status === 'done' && result?.csv && (
+        <TextResult
+          text={result.csv}
+          downloadName={files[0] ? `${files[0].name.replace(/\.pdf$/i, '')}-data.csv` : 'extracted-data.csv'}
+          downloadMime="text/csv"
+          resetLabel="Extract from another"
+          onReset={() => { setStatus('idle'); setResult(null); setFiles([]) }}
+        />
+      )}
+
+      {status === 'done' && result?.text && (
+        <TextResult
+          text={result.text}
+          downloadName={files[0] ? `${files[0].name.replace(/\.[^.]+$/, '')}-text.txt` : 'ocr-output.txt'}
+          resetLabel="Extract from another"
           onReset={() => { setStatus('idle'); setResult(null); setFiles([]) }}
         />
       )}
 
       {status !== 'done' && (
         <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <button className="btn-primary" onClick={run} disabled={!files.length || status === 'working'}>
+          <button className="btn-primary" onClick={run} disabled={!files.length || status === 'working' || (slug === 'chat-with-pdf' && !question.trim())}>
             {status === 'working' ? 'Working…' : tool.name}
           </button>
         </div>

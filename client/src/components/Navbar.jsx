@@ -1,23 +1,12 @@
 import { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import { DECKS } from '../lib/tools.js'
+import { Link, NavLink } from 'react-router-dom'
+import { DECKS, toolHref } from '../lib/tools.js'
 import { ToolIcon } from '../lib/icons.jsx'
-
-const Logo = () => (
-  <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
-    <rect x="8" y="3" width="18" height="22" rx="3" fill="#FFD0BE" />
-    <rect x="5" y="6" width="18" height="22" rx="3" fill="#FFB49A" />
-    <rect x="2" y="9" width="18" height="22" rx="3" fill="#E55100" />
-    <path d="M6 17h10M6 21h7" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-  </svg>
-)
-
-const DECK_COLORS = { pdf: '#C0392B', image: '#1A5FBF', ai: '#0D7377' }
+import Logo from './Logo.jsx'
 
 function NavDropdown({ deck, onNavigate }) {
   const [open, setOpen] = useState(false)
   const closeTimer = useRef(null)
-  const color = DECK_COLORS[deck.id]
 
   const handleEnter = () => { clearTimeout(closeTimer.current); setOpen(true) }
   const handleLeave = () => { closeTimer.current = setTimeout(() => setOpen(false), 120) }
@@ -35,12 +24,18 @@ function NavDropdown({ deck, onNavigate }) {
         <div className="nav-dropdown">
           <div className="nav-dropdown-inner">
             {deck.tools.map(tool => (
-              <Link key={tool.slug} to={`/${tool.slug}`} className="nav-dropdown-item"
+              <Link key={tool.slug} to={toolHref(tool)} className="nav-dropdown-item"
                 onClick={() => { setOpen(false); onNavigate?.() }}>
-                <div className="nav-di-icon" style={{ background: color }}>
+                <div className="nav-di-icon" style={{ background: deck.color }}>
                   <ToolIcon slug={tool.slug} />
                 </div>
                 <span>{tool.name}</span>
+                {tool.pro && (
+                  <svg className="pro-lock" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-label="Pro feature">
+                    <rect x="2.5" y="5.5" width="7" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+                    <path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  </svg>
+                )}
               </Link>
             ))}
           </div>
@@ -56,24 +51,30 @@ function MobileMenu({ open, onClose }) {
     <div className="mobile-menu">
       {DECKS.map(deck => (
         <div key={deck.id} className="mobile-deck">
-          <span className="mobile-deck-label" style={{ color: DECK_COLORS[deck.id] }}>
+          <span className="mobile-deck-label" style={{ color: deck.color }}>
             {deck.name.replace(' Deck', '')}
           </span>
           <div className="mobile-deck-grid">
             {deck.tools.map(tool => (
-              <Link key={tool.slug} to={`/${tool.slug}`} className="mobile-tool-item" onClick={onClose}>
-                <div className="nav-di-icon" style={{ background: DECK_COLORS[deck.id] }}>
+              <Link key={tool.slug} to={toolHref(tool)} className="mobile-tool-item" onClick={onClose}>
+                <div className="nav-di-icon" style={{ background: deck.color }}>
                   <ToolIcon slug={tool.slug} />
                 </div>
                 <span>{tool.name}</span>
+                {tool.pro && (
+                  <svg className="pro-lock" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-label="Pro feature">
+                    <rect x="2.5" y="5.5" width="7" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+                    <path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                  </svg>
+                )}
               </Link>
             ))}
           </div>
         </div>
       ))}
       <div className="mobile-footer">
-        <a href="/pricing" className="nav-plain-link" onClick={onClose}>Pricing</a>
-        <button className="nav-cta" onClick={onClose}>Sign in</button>
+        <Link to="/pricing" className="nav-plain-link" onClick={onClose}>Pricing</Link>
+        <Link to="/pricing" className="nav-cta" onClick={onClose}>Get started</Link>
       </div>
     </div>
   )
@@ -94,8 +95,8 @@ export default function Navbar() {
             {DECKS.map(deck => <NavDropdown key={deck.id} deck={deck} />)}
           </div>
           <div className="nav-right">
-            <a href="/pricing" className="nav-plain-link">Pricing</a>
-            <button className="nav-cta">Sign in</button>
+            <NavLink to="/pricing" className="nav-plain-link">Pricing</NavLink>
+            <Link to="/pricing" className="nav-cta">Get started</Link>
           </div>
           <button
             className="nav-hamburger"
