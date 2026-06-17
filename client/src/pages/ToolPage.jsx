@@ -137,6 +137,8 @@ export default function ToolPage() {
 
   useEffect(() => {
     document.title = tool ? `${tool.name} — PDF Deck` : 'PDF Deck'
+    const metaDesc = document.querySelector('meta[name="description"]')
+    if (metaDesc && tool) metaDesc.setAttribute('content', tool.desc)
   }, [tool])
 
   if (!tool) {

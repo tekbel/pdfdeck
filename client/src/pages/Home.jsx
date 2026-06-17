@@ -42,7 +42,7 @@ const HOW_STEPS = [
   {
     n: '02',
     title: 'Processed instantly',
-    desc: 'CloudConvert and Claude handle the heavy lifting. Done in seconds, not minutes.',
+    desc: 'Your file is processed instantly. Done in seconds, not minutes.',
   },
   {
     n: '03',

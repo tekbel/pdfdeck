@@ -2,8 +2,12 @@
 
 ## Pre-launch (must do before going live)
 
-- [ ] Swap in-memory rate limit for Supabase row inserts so limits survive deploys and scale across instances. The `usage` Map in `server/routes/tools.js` is the placeholder.
-- [ ] Wire waitlist form submissions (`Pricing.jsx` `handleSubmit`) to Supabase or a mailing list (Resend, Mailchimp, etc.) so emails are actually captured.
+- [x] Fix `trust proxy` so rate limiting works correctly behind Railway's load balancer.
+- [x] Add helmet.js security headers (X-Frame-Options, X-Content-Type-Options, HSTS, etc.).
+- [x] Wire waitlist form to Formspree so emails are actually captured.
+- [x] Add `robots.txt` to disallow `/api/` from crawlers.
+- [x] Add meta description tags (base in index.html, per-tool on ToolPage).
+- [x] Add React error boundary so a component crash shows a friendly message.
 - [ ] Confirm `CLOUDCONVERT_API_KEY` in Railway is a production key, not a sandbox key. Sandbox keys reject real files.
 
 ## Phase 2 — Auth and billing
@@ -11,23 +15,24 @@
 - [ ] Stripe integration for Pro tier ($8/month). Wire checkout to the pricing page.
 - [ ] Supabase auth (email + Google). Gate AI tools behind session check instead of the current client-side `tool.pro` flag.
 - [ ] Replace in-memory rate limit with Supabase usage tracking keyed by user ID for logged-in users, IP for guests.
-- [ ] Honor the waitlist "first month free" promise — apply a Stripe coupon at checkout for waitlist emails.
+- [ ] Swap Formspree waitlist for a proper mailing list (Resend, Mailchimp) as volume grows.
 
 ## SEO and discoverability
 
-- [ ] Add `robots.txt` and `sitemap.xml` to the client public folder.
-- [ ] Add `<meta>` description tags per page (currently missing on tool pages).
-- [ ] Add Open Graph tags for link previews when shared on social.
+- [ ] Add Open Graph image for link previews when shared on social.
+- [ ] Add `sitemap.xml`.
 
 ## Reliability
 
-- [ ] Add a React error boundary so a component crash shows a friendly message instead of a blank page.
 - [ ] Add CloudConvert webhook support as an alternative to polling, to avoid the 2s × 60 attempts timeout on slow jobs.
 - [ ] Handle the case where a CloudConvert job returns partial results (some tasks finish, one errors).
 
+## Mobile
+
+- [ ] Build companion mobile app (Flutter, iOS + Android) that mirrors the web tool catalog.
+
 ## Nice to have
 
-- [ ] `robots.txt` disallow on `/api/` routes.
 - [ ] Toast notifications instead of inline error text for a cleaner UX.
 - [ ] File type validation on the client before upload (currently only validated by `accept` attribute, which is bypassable).
 - [ ] Dark mode.

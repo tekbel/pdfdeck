@@ -28,16 +28,30 @@ function CheckIcon({ color }) {
 function WaitlistForm() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault()
     if (!email.trim() || !email.includes('@')) {
       setError('Enter a valid email address.')
       return
     }
     setError('')
-    setSubmitted(true)
+    setLoading(true)
+    try {
+      const res = await fetch('https://formspree.io/f/xdavvpdo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) throw new Error()
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {
@@ -47,7 +61,7 @@ function WaitlistForm() {
           <circle cx="9" cy="9" r="8" stroke="var(--green)" strokeWidth="1.5"/>
           <path d="M5.5 9.5l2.5 2.5 4.5-5" stroke="var(--green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        You're on the list. We'll email <strong>{email}</strong> when Pro launches.
+        You're on the list. We'll email you when Pro launches.
       </div>
     )
   }
@@ -61,9 +75,10 @@ function WaitlistForm() {
         value={email}
         onChange={e => { setEmail(e.target.value); setError('') }}
         autoComplete="email"
+        disabled={loading}
       />
-      <button type="submit" className="btn-primary waitlist-btn">
-        Join waitlist
+      <button type="submit" className="btn-primary waitlist-btn" disabled={loading}>
+        {loading ? 'Joining…' : 'Join waitlist'}
       </button>
       {error && <p className="waitlist-error">{error}</p>}
     </form>
@@ -116,7 +131,7 @@ export default function Pricing() {
               <li key={f}><CheckIcon color="var(--brand)" />{f}</li>
             ))}
           </ul>
-          <p className="waitlist-label">Pro is launching soon. Join the waitlist and get your first month free at launch.</p>
+          <p className="waitlist-label">Pro is launching soon. Join the waitlist to be first in line.</p>
           <WaitlistForm />
         </div>
       </div>

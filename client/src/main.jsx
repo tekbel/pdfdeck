@@ -13,6 +13,7 @@ import Pricing from './pages/Pricing.jsx'
 import NotFound from './pages/NotFound.jsx'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -50,6 +51,8 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 )
