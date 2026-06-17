@@ -138,17 +138,31 @@ button { font-family: inherit; cursor: pointer; }
 .nav-link-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   background: none;
-  border: none;
-  padding: 0;
-  font-size: 14px;
-  font-weight: 500;
+  border: 1px solid transparent;
+  padding: 5px 10px 5px 8px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--ink-dim);
   cursor: pointer;
-  transition: color 0.12s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
-.nav-link-btn:hover { color: var(--ink); }
+.nav-link-btn:hover,
+.nav-link-btn[aria-expanded="true"] {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--ink);
+}
+
+.nav-btn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
 
 /* Dropdown wrapper */
 .nav-dropdown-wrap {
@@ -1054,6 +1068,55 @@ button { font-family: inherit; cursor: pointer; }
 @media (max-width: 600px) {
   .pricing-grid { grid-template-columns: 1fr; }
 }
+
+/* ---- Waitlist form (Pricing page) ---- */
+.waitlist-label {
+  font-size: 13px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.waitlist-form {
+  display: grid;
+  gap: 8px;
+}
+
+.waitlist-input {
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.12s;
+  width: 100%;
+}
+.waitlist-input:focus { border-color: var(--brand); }
+
+.waitlist-btn { width: 100%; }
+
+.waitlist-error {
+  font-size: 12.5px;
+  color: var(--red);
+}
+
+.waitlist-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  padding: 12px 14px;
+  background: #F0FDF7;
+  border: 1px solid #BBF7D0;
+  border-radius: 9px;
+}
+
+.waitlist-success svg { flex-shrink: 0; margin-top: 2px; }
 
 /* ---- Breadcrumb ---- */
 .breadcrumb {

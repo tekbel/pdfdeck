@@ -9,7 +9,7 @@ const upload = multer({
 
 // ---- Rate limiting (per-IP, in-memory; swap for Supabase in production) ----
 const usage = new Map()
-const FREE_DAILY_LIMIT = 3
+const FREE_DAILY_LIMIT = 10
 
 function rateLimit(req, res, next) {
   const key = req.ip + ':' + new Date().toISOString().slice(0, 10)
@@ -68,9 +68,7 @@ const CC_CONVERT = {
   'pdf-to-word':  { to: 'docx' },
   'word-to-pdf':  { to: 'pdf' },
   'pdf-to-jpg':   { to: 'jpg' },
-  'jpg-to-pdf':   { to: 'pdf' },
   'pdf-to-excel': { to: 'xlsx' },
-  'image-to-pdf': { to: 'pdf' },
 }
 
 async function convertFile(slug, files) {
@@ -187,6 +185,36 @@ async function splitPdf(files, pageRange) {
   return pollJob(data.id, apiKey)
 }
 
+async function multiImageToPdf(files) {
+  const apiKey = process.env.CLOUDCONVERT_API_KEY
+  if (!apiKey) throw new Error('CLOUDCONVERT_API_KEY not configured')
+
+  if (files.length === 1) {
+    const { data } = await createJob({
+      'import-file':  { operation: 'import/upload' },
+      'convert-file': { operation: 'convert', input: 'import-file', output_format: 'pdf' },
+      'export-file':  { operation: 'export/url', input: 'convert-file' },
+    }, apiKey)
+    await uploadToTask(data.tasks.find(t => t.name === 'import-file'), files[0])
+    return pollJob(data.id, apiKey)
+  }
+
+  // Multiple images: convert each to PDF, then merge into one
+  const tasks = {}
+  files.forEach((_, i) => {
+    tasks[`import-${i}`]  = { operation: 'import/upload' }
+    tasks[`convert-${i}`] = { operation: 'convert', input: `import-${i}`, output_format: 'pdf' }
+  })
+  tasks['merge-task']  = { operation: 'merge', input: files.map((_, i) => `convert-${i}`), output_format: 'pdf' }
+  tasks['export-file'] = { operation: 'export/url', input: 'merge-task' }
+
+  const { data } = await createJob(tasks, apiKey)
+  await Promise.all(files.map((file, i) =>
+    uploadToTask(data.tasks.find(t => t.name === `import-${i}`), file)
+  ))
+  return pollJob(data.id, apiKey)
+}
+
 async function claudeChat(files, question) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
@@ -299,7 +327,11 @@ router.post('/:slug', rateLimit, upload.array('files', 20), async (req, res) => 
       if (req.files.length < 2) return res.status(400).json({ error: 'Upload at least 2 PDFs to merge' })
       return res.json(await mergePdf(req.files))
     }
-    if (slug === 'split-pdf')       return res.json(await splitPdf(req.files, req.body.pageRange))
+    if (slug === 'split-pdf') {
+      if (!req.body.pageRange?.trim()) return res.status(400).json({ error: 'Enter a page range, e.g. 1-3 or 5, 8-10' })
+      return res.json(await splitPdf(req.files, req.body.pageRange))
+    }
+    if (slug === 'jpg-to-pdf' || slug === 'image-to-pdf') return res.json(await multiImageToPdf(req.files))
     if (slug === 'compress-image')  return res.json(await compressImage(req.files))
     if (slug === 'resize-image')    return res.json(await resizeImage(req.files, req.body.width, req.body.height))
     if (slug === 'image-converter') return res.json(await convertImage(req.files, req.body.targetFormat))

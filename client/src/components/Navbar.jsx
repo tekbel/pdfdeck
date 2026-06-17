@@ -14,6 +14,7 @@ function NavDropdown({ deck, onNavigate }) {
   return (
     <div className="nav-dropdown-wrap" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
       <button className="nav-link-btn" aria-expanded={open}>
+        <span className="nav-btn-dot" style={{ background: deck.color }} />
         {deck.name.replace(' Deck', '')}
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>

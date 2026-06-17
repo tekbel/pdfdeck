@@ -1,16 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const FEATURES_FREE = [
   '13 PDF and image tools',
-  '3 conversions per day',
+  '10 conversions per day',
   'Files never stored',
-  'Ad-supported',
+  'No account required',
 ]
 
 const FEATURES_PRO = [
   'Unlimited conversions',
-  'AI tools (summarize, chat, extract)',
+  'AI tools (summarize, chat, extract, OCR)',
   'Ad-free experience',
   'Priority processing',
   'Early access to new tools',
@@ -22,6 +22,51 @@ function CheckIcon({ color }) {
       <circle cx="8" cy="8" r="7" stroke={color} strokeWidth="1.5"/>
       <path d="M5 8.5l2 2 4-4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
+  )
+}
+
+function WaitlistForm() {
+  const [email, setEmail] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = e => {
+    e.preventDefault()
+    if (!email.trim() || !email.includes('@')) {
+      setError('Enter a valid email address.')
+      return
+    }
+    setError('')
+    setSubmitted(true)
+  }
+
+  if (submitted) {
+    return (
+      <div className="waitlist-success">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <circle cx="9" cy="9" r="8" stroke="var(--green)" strokeWidth="1.5"/>
+          <path d="M5.5 9.5l2.5 2.5 4.5-5" stroke="var(--green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        You're on the list. We'll email <strong>{email}</strong> when Pro launches.
+      </div>
+    )
+  }
+
+  return (
+    <form className="waitlist-form" onSubmit={handleSubmit} noValidate>
+      <input
+        className="waitlist-input"
+        type="email"
+        placeholder="your@email.com"
+        value={email}
+        onChange={e => { setEmail(e.target.value); setError('') }}
+        autoComplete="email"
+      />
+      <button type="submit" className="btn-primary waitlist-btn">
+        Join waitlist
+      </button>
+      {error && <p className="waitlist-error">{error}</p>}
+    </form>
   )
 }
 
@@ -39,7 +84,10 @@ export default function Pricing() {
         <div className="pricing-card">
           <div className="pricing-card-header">
             <h2>Free</h2>
-            <div className="pricing-amount"><span className="pricing-price">$0</span><span className="pricing-period">/month</span></div>
+            <div className="pricing-amount">
+              <span className="pricing-price">$0</span>
+              <span className="pricing-period">/month</span>
+            </div>
             <p className="pricing-desc">Everything you need for everyday file tasks.</p>
           </div>
           <ul className="pricing-features">
@@ -47,15 +95,20 @@ export default function Pricing() {
               <li key={f}><CheckIcon color="var(--green)" />{f}</li>
             ))}
           </ul>
-          <Link to="/" className="btn-outline" style={{ textDecoration: 'none' }}>Get started free</Link>
+          <Link to="/" className="btn-outline" style={{ textDecoration: 'none' }}>
+            Get started free
+          </Link>
         </div>
 
         <div className="pricing-card pricing-card-pro">
           <div className="pricing-card-header">
             <div className="pricing-pro-badge">Pro</div>
             <h2>Pro</h2>
-            <div className="pricing-amount"><span className="pricing-price">$8</span><span className="pricing-period">/month</span></div>
-            <p className="pricing-desc">Unlimited access for power users and teams.</p>
+            <div className="pricing-amount">
+              <span className="pricing-price">$8</span>
+              <span className="pricing-period">/month</span>
+            </div>
+            <p className="pricing-desc">Unlimited access plus AI tools for power users.</p>
           </div>
           <ul className="pricing-features">
             <li className="pricing-includes">Everything in Free, plus:</li>
@@ -63,9 +116,8 @@ export default function Pricing() {
               <li key={f}><CheckIcon color="var(--brand)" />{f}</li>
             ))}
           </ul>
-          <button className="btn-primary" disabled style={{ width: '100%', opacity: 0.6, cursor: 'not-allowed' }}>
-            Coming soon
-          </button>
+          <p className="waitlist-label">Pro is launching soon. Join the waitlist and get your first month free at launch.</p>
+          <WaitlistForm />
         </div>
       </div>
     </main>

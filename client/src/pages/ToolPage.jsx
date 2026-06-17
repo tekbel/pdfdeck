@@ -280,7 +280,7 @@ export default function ToolPage() {
             value={pageRange}
             onChange={e => setPageRange(e.target.value)}
           />
-          <span className="page-range-hint">Leave blank to split into individual pages</span>
+          <span className="page-range-hint">Required. e.g. 1-3 extracts pages 1 to 3. Use commas for non-consecutive pages: 1, 4, 7-9</span>
         </div>
       )}
 
