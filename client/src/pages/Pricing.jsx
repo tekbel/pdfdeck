@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 
 const FEATURES_FREE = [
   '13 PDF and image tools',
@@ -86,10 +87,15 @@ function WaitlistForm() {
 }
 
 export default function Pricing() {
-  useEffect(() => { document.title = 'Pricing — PDF Deck' }, [])
-
   return (
     <main className="pricing-page container">
+      <Helmet>
+        <title>Pricing — PDF Deck</title>
+        <meta name="description" content="PDF Deck is free to start. 10 conversions per day, no account required. Upgrade to Pro for unlimited access and AI tools." />
+        <link rel="canonical" href="https://pdfdeck.app/pricing" />
+        <meta property="og:title" content="Pricing — PDF Deck" />
+        <meta property="og:url" content="https://pdfdeck.app/pricing" />
+      </Helmet>
       <div className="pricing-hero">
         <h1>Plans & Pricing</h1>
         <p className="tool-sub">Start for free. Upgrade when you need more.</p>

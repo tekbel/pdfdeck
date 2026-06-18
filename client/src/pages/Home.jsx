@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 import { DECKS, ALL_TOOLS, toolHref } from '../lib/tools.js'
@@ -55,9 +56,6 @@ export default function Home() {
   const heroRef = useRef()
   const mainRef = useRef()
 
-  useEffect(() => {
-    document.title = 'PDF Deck — Every PDF and file tool in one place'
-  }, [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -166,6 +164,10 @@ export default function Home() {
 
   return (
     <main ref={mainRef}>
+      <Helmet>
+        <title>PDF Deck — Every PDF and file tool, one place</title>
+        <link rel="canonical" href="https://pdfdeck.app/" />
+      </Helmet>
 
       {/* ---- Hero ---- */}
       <section className="hero" ref={heroRef}>

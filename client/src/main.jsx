@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter, Routes, Route, useParams, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import '@fontsource-variable/nunito'
@@ -51,8 +52,10 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </HelmetProvider>
   </React.StrictMode>
 )

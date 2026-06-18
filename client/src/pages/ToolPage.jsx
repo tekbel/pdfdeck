@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { findTool } from '../lib/tools.js'
 
 const Breadcrumb = () => (
@@ -135,11 +136,9 @@ export default function ToolPage() {
   const [resizeHeight, setResizeHeight] = useState('')
   const [question, setQuestion] = useState('')
 
-  useEffect(() => {
-    document.title = tool ? `${tool.name} — PDF Deck` : 'PDF Deck'
-    const metaDesc = document.querySelector('meta[name="description"]')
-    if (metaDesc && tool) metaDesc.setAttribute('content', tool.desc)
-  }, [tool])
+  const pageTitle = tool ? `${tool.name} — PDF Deck` : 'PDF Deck'
+  const pageDesc = tool ? tool.desc : 'Free PDF and file tools.'
+  const pageUrl = tool ? `https://pdfdeck.app/${tool.slug}` : 'https://pdfdeck.app'
 
   if (!tool) {
     return (
@@ -154,6 +153,14 @@ export default function ToolPage() {
   if (tool.pro) {
     return (
       <main className="tool-page container">
+        <Helmet>
+          <title>{pageTitle}</title>
+          <meta name="description" content={pageDesc} />
+          <link rel="canonical" href={pageUrl} />
+          <meta property="og:title" content={pageTitle} />
+          <meta property="og:description" content={pageDesc} />
+          <meta property="og:url" content={pageUrl} />
+        </Helmet>
         <Breadcrumb />
         <div className="pro-gate">
           <div className="pro-gate-icon">
@@ -223,6 +230,14 @@ export default function ToolPage() {
 
   return (
     <main className="tool-page container">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDesc} />
+        <link rel="canonical" href={pageUrl} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDesc} />
+        <meta property="og:url" content={pageUrl} />
+      </Helmet>
       <Breadcrumb />
       <h1>{tool.name}</h1>
       <p className="tool-sub">{tool.desc}</p>
