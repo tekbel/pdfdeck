@@ -1,0 +1,34 @@
+# PDF Deck
+
+> Free PDF and file tools. Convert, compress, merge, split, and understand your documents. No account required. Files processed in memory and never stored.
+
+## Tools
+
+### PDF Tools
+- [PDF to Word](https://pdfdeck.app/pdf-to-word): Convert PDF to editable DOCX, layout preserved.
+- [Word to PDF](https://pdfdeck.app/word-to-pdf): Turn DOC or DOCX into a clean PDF.
+- [Compress PDF](https://pdfdeck.app/compress-pdf): Shrink file size without visible quality loss.
+- [Merge PDF](https://pdfdeck.app/merge-pdf): Combine multiple PDFs in the order you choose.
+- [Split PDF](https://pdfdeck.app/split-pdf): Extract pages or split into separate files.
+- [PDF to JPG](https://pdfdeck.app/pdf-to-jpg): Save each PDF page as a high-quality image.
+- [JPG to PDF](https://pdfdeck.app/jpg-to-pdf): Combine images into a single PDF.
+- [PDF to Excel](https://pdfdeck.app/pdf-to-excel): Pull tables out of PDFs into editable XLSX.
+
+### Image Tools
+- [Image Converter](https://pdfdeck.app/image-converter): Convert between PNG, JPG, WebP, HEIC, and AVIF.
+- [Compress Image](https://pdfdeck.app/compress-image): Smaller files, same look.
+- [Resize Image](https://pdfdeck.app/resize-image): Set exact dimensions or scale by percentage.
+- [Image to PDF](https://pdfdeck.app/image-to-pdf): Turn photos and scans into a tidy PDF.
+
+### AI Tools (Pro)
+- [Summarize PDF](https://pdfdeck.app/summarize-pdf): Key points from any document in seconds.
+- [Chat with PDF](https://pdfdeck.app/chat-with-pdf): Ask your document questions, get cited answers.
+- [Extract Data](https://pdfdeck.app/extract-data): Pull tables and structured data from PDFs into CSV.
+- [OCR PDF](https://pdfdeck.app/ocr-pdf): Extract all text from scanned PDFs and images.
+
+## Pricing
+- Free: 10 conversions per day, no account required.
+- Pro: Unlimited conversions plus AI tools. Launching soon.
+
+## Privacy
+Files are processed in memory and never written to disk or stored after the job completes.
