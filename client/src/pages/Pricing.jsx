@@ -90,10 +90,10 @@ export default function Pricing() {
   return (
     <main className="pricing-page container">
       <Helmet>
-        <title>Pricing — PDF Deck</title>
+        <title>Pricing | PDF Deck</title>
         <meta name="description" content="PDF Deck is free to start. 10 conversions per day, no account required. Upgrade to Pro for unlimited access and AI tools." />
         <link rel="canonical" href="https://pdfdeck.app/pricing" />
-        <meta property="og:title" content="Pricing — PDF Deck" />
+        <meta property="og:title" content="Pricing | PDF Deck" />
         <meta property="og:url" content="https://pdfdeck.app/pricing" />
       </Helmet>
       <div className="pricing-hero">

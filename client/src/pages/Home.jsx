@@ -38,7 +38,7 @@ const HOW_STEPS = [
   {
     n: '01',
     title: 'Drop your file',
-    desc: 'Drag and drop or click to upload. PDF, image, Word — any format accepted.',
+    desc: 'Drag and drop or click to upload. PDF, image, Word. Any format accepted.',
   },
   {
     n: '02',
@@ -165,7 +165,7 @@ export default function Home() {
   return (
     <main ref={mainRef}>
       <Helmet>
-        <title>PDF Deck — Every PDF and file tool, one place</title>
+        <title>PDF Deck | Every PDF and file tool, one place</title>
         <link rel="canonical" href="https://pdfdeck.app/" />
       </Helmet>
 

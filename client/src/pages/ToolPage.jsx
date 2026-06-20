@@ -136,7 +136,7 @@ export default function ToolPage() {
   const [resizeHeight, setResizeHeight] = useState('')
   const [question, setQuestion] = useState('')
 
-  const pageTitle = tool ? `${tool.name} — PDF Deck` : 'PDF Deck'
+  const pageTitle = tool ? `${tool.name} | PDF Deck` : 'PDF Deck'
   const pageDesc = tool ? tool.desc : 'Free PDF and file tools.'
   const pageUrl = tool ? `https://pdfdeck.app/${tool.slug}` : 'https://pdfdeck.app'
 

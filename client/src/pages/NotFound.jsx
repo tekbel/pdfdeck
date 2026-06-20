@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 export default function NotFound() {
-  useEffect(() => { document.title = 'Page not found — PDF Deck' }, [])
+  useEffect(() => { document.title = 'Page not found | PDF Deck' }, [])
 
   return (
     <main className="tool-page container" style={{ textAlign: 'center' }}>
