@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import gsap from 'gsap'
-import ScrollTrigger from 'gsap/ScrollTrigger'
 import { DECKS, ALL_TOOLS, toolHref } from '../lib/tools.js'
 import { ToolIcon } from '../lib/icons.jsx'
 
@@ -187,9 +185,22 @@ export default function Home() {
   const heroRef = useRef()
   const mainRef = useRef()
 
-
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    let ctx
+    let lenis
+
+    Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger'),
+      import('lenis'),
+    ]).then(([{ default: gsap }, { default: ScrollTrigger }, { default: Lenis }]) => {
+      gsap.registerPlugin(ScrollTrigger)
+      lenis = new Lenis()
+      lenis.on('scroll', ScrollTrigger.update)
+      gsap.ticker.add(time => lenis.raf(time * 1000))
+      gsap.ticker.lagSmoothing(0)
+
+      ctx = gsap.context(() => {
       // Hero: headline, sub, trust — sequential fade-up
       gsap.from('.hero-h1', {
         y: 28,
@@ -288,9 +299,13 @@ export default function Home() {
         ease: 'power3.out',
         scrollTrigger: { trigger: '.stats-section', start: 'top 88%' },
       })
-    }, mainRef)
+      }, mainRef)
+    })
 
-    return () => ctx.revert()
+    return () => {
+      ctx?.revert()
+      lenis?.destroy()
+    }
   }, [])
 
   return (
