@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 
 const FEATURES_FREE = [
-  '13 PDF and image tools',
+  '12 PDF and image tools',
   '10 conversions per day',
   'Files never stored',
   'No account required',

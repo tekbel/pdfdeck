@@ -19,7 +19,7 @@ export const DECKS = [
     name: 'Image Deck',
     color: '#1A5FBF',
     tools: [
-      { slug: 'image-converter', name: 'Image Converter', icon: '🔄', desc: 'PNG, JPG, WebP, HEIC, AVIF — convert any to any.', accept: 'image/*', kind: 'convert' },
+      { slug: 'image-converter', name: 'Image Converter', icon: '🔄', desc: 'Convert between PNG, JPG, WebP, HEIC, and AVIF.', accept: 'image/*', kind: 'convert' },
       { slug: 'compress-image', name: 'Compress Image', icon: '📉', desc: 'Smaller files, same look. Tuned per image.', accept: 'image/*', kind: 'compress', multi: true },
       { slug: 'resize-image', name: 'Resize Image', icon: '📐', desc: 'Exact dimensions or scale by percentage.', accept: 'image/*', kind: 'edit' },
       { slug: 'image-to-pdf', name: 'Image to PDF', icon: '🗂️', desc: 'Turn photos and scans into a tidy PDF.', accept: 'image/*', kind: 'convert', multi: true },
