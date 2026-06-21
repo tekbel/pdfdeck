@@ -3,6 +3,7 @@ import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import toolsRouter from './routes/tools.js'
 import { stripeRouter, isProUser } from './routes/stripe.js'
+import { sitemapRouter } from './routes/sitemap.js'
 
 const app = express()
 app.set('trust proxy', 1)
@@ -15,6 +16,7 @@ app.use(cookieParser())
 app.use(express.json())
 app.use('/api/tools', toolsRouter)
 app.use('/api/stripe', stripeRouter)
+app.use('/', sitemapRouter)
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'pdfdeck' }))
 app.get('/api/pro/status', (req, res) => res.json({ pro: isProUser(req) }))
 
