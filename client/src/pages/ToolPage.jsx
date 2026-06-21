@@ -187,6 +187,22 @@ export default function ToolPage() {
   const pageDesc = tool ? (tool.seoDesc || tool.desc) : 'Free PDF and file tools.'
   const pageUrl = tool ? `https://pdfdeck.app/${tool.slug}` : 'https://pdfdeck.app'
 
+  const schemaJson = tool ? JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.name,
+    description: tool.seoDesc || tool.desc,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Web',
+    url: pageUrl,
+    offers: tool.pro
+      ? [
+          { '@type': 'Offer', price: '0', priceCurrency: 'USD', description: 'Free trial' },
+          { '@type': 'Offer', price: '6', priceCurrency: 'USD', description: 'Pro subscription' },
+        ]
+      : { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  }) : null
+
   if (!tool) {
     return (
       <main className="tool-page container">
@@ -211,6 +227,7 @@ export default function ToolPage() {
           <meta property="og:title" content={pageTitle} />
           <meta property="og:description" content={pageDesc} />
           <meta property="og:url" content={pageUrl} />
+          <script type="application/ld+json">{schemaJson}</script>
         </Helmet>
         <Breadcrumb />
         <div className="pro-gate">
@@ -292,6 +309,7 @@ export default function ToolPage() {
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDesc} />
         <meta property="og:url" content={pageUrl} />
+        <script type="application/ld+json">{schemaJson}</script>
       </Helmet>
       <Breadcrumb />
       <h1>{tool.name}</h1>
