@@ -333,8 +333,32 @@ export default function Home() {
   return (
     <main ref={mainRef}>
       <Helmet>
-        <title>PDF Deck | Every PDF and file tool, one place</title>
+        <title>PDFDeck | Every PDF and file tool, one place</title>
+        <meta name="description" content="Convert, compress, merge, split, and understand your files in seconds. 16 free PDF and image tools. No account needed. Files deleted immediately after processing." />
         <link rel="canonical" href="https://pdfdeck.app/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="PDFDeck | Every PDF and file tool, one place" />
+        <meta property="og:description" content="Convert, compress, merge, split, and understand your files in seconds. 16 free PDF and image tools. No account needed. Files deleted immediately after processing." />
+        <meta property="og:url" content="https://pdfdeck.app/" />
+        <meta property="og:image" content="https://pdfdeck.app/og-image.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="PDFDeck | Every PDF and file tool, one place" />
+        <meta name="twitter:description" content="Convert, compress, merge, split, and understand your files in seconds. 16 free PDF and image tools. No account needed." />
+        <meta name="twitter:image" content="https://pdfdeck.app/og-image.png" />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'PDFDeck',
+          url: 'https://pdfdeck.app',
+          description: 'Free PDF and file tools. Convert, compress, merge, split, and understand documents online. No account required.',
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'PDFDeck',
+          url: 'https://pdfdeck.app',
+          logo: 'https://pdfdeck.app/og-image.png',
+        })}</script>
       </Helmet>
 
       {/* ---- Hero ---- */}

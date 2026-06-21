@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { findTool } from '../lib/tools.js'
+import { findTool, ALL_TOOLS } from '../lib/tools.js'
 
 const Breadcrumb = () => (
   <Link to="/" className="breadcrumb">
@@ -203,6 +203,29 @@ export default function ToolPage() {
       : { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   }) : null
 
+  const breadcrumbJson = tool ? JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'PDFDeck', item: 'https://pdfdeck.app' },
+      { '@type': 'ListItem', position: 2, name: tool.name, item: pageUrl },
+    ],
+  }) : null
+
+  const faqJson = tool?.faq?.length ? JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: tool.faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }) : null
+
+  const relatedTools = tool?.related?.map(slug => ALL_TOOLS.find(t => t.slug === slug)).filter(Boolean) ?? []
+
+  const OG_IMAGE = 'https://pdfdeck.app/og-image.png'
+
   if (!tool) {
     return (
       <main className="tool-page container">
@@ -224,10 +247,18 @@ export default function ToolPage() {
           <title>{pageTitle}</title>
           <meta name="description" content={pageDesc} />
           <link rel="canonical" href={pageUrl} />
+          <meta property="og:type" content="website" />
           <meta property="og:title" content={pageTitle} />
           <meta property="og:description" content={pageDesc} />
           <meta property="og:url" content={pageUrl} />
+          <meta property="og:image" content={OG_IMAGE} />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={pageTitle} />
+          <meta name="twitter:description" content={pageDesc} />
+          <meta name="twitter:image" content={OG_IMAGE} />
           <script type="application/ld+json">{schemaJson}</script>
+          <script type="application/ld+json">{breadcrumbJson}</script>
+          {faqJson && <script type="application/ld+json">{faqJson}</script>}
         </Helmet>
         <Breadcrumb />
         <div className="pro-gate">
@@ -306,10 +337,18 @@ export default function ToolPage() {
         <title>{pageTitle}</title>
         <meta name="description" content={pageDesc} />
         <link rel="canonical" href={pageUrl} />
+        <meta property="og:type" content="website" />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDesc} />
         <meta property="og:url" content={pageUrl} />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDesc} />
+        <meta name="twitter:image" content={OG_IMAGE} />
         <script type="application/ld+json">{schemaJson}</script>
+        <script type="application/ld+json">{breadcrumbJson}</script>
+        {faqJson && <script type="application/ld+json">{faqJson}</script>}
       </Helmet>
       <Breadcrumb />
       <h1>{tool.name}</h1>
@@ -507,6 +546,37 @@ export default function ToolPage() {
             {status === 'working' ? 'Working…' : tool.name}
           </button>
         </div>
+      )}
+
+      {relatedTools.length > 0 && (
+        <section className="related-tools">
+          <h2 className="related-title">Related tools</h2>
+          <div className="related-grid">
+            {relatedTools.map(t => (
+              <Link key={t.slug} to={`/${t.slug}`} className="related-card">
+                <span className="related-icon">{t.icon}</span>
+                <div>
+                  <div className="related-name">{t.name}</div>
+                  <div className="related-desc">{t.desc}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {tool.faq?.length > 0 && (
+        <section className="tool-faq">
+          <h2 className="faq-title">Frequently asked questions</h2>
+          <dl className="faq-list">
+            {tool.faq.map(({ q, a }) => (
+              <div key={q} className="faq-item">
+                <dt>{q}</dt>
+                <dd>{a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       )}
     </main>
   )

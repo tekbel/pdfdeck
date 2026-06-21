@@ -1,4 +1,4 @@
-# PDF Deck
+# PDFDeck
 
 > Free PDF and file tools. Convert, compress, merge, split, and understand your documents. No account required. Files processed in memory and never stored.
 
@@ -28,7 +28,7 @@
 
 ## Pricing
 - Free: 10 conversions per day, no account required.
-- Pro: Unlimited conversions plus AI tools. Launching soon.
+- Pro: $6/month. Unlimited conversions plus all AI tools (Summarize PDF, Chat with PDF, Extract Data, OCR PDF).
 
 ## Privacy
 Files are processed in memory and never written to disk or stored after the job completes.

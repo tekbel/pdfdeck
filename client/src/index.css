@@ -1473,3 +1473,96 @@ button { font-family: inherit; cursor: pointer; }
   .hero-h1 { font-size: clamp(36px, 9vw, 52px); }
   .hero-br { display: none; }
 }
+
+/* ── Related tools ───────────────────────────────────────────── */
+.related-tools {
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+.related-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 16px;
+}
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.related-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.related-card:hover {
+  border-color: var(--brand);
+  box-shadow: 0 2px 8px rgba(229,81,0,0.08);
+}
+.related-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.related-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.related-desc {
+  font-size: 12px;
+  color: var(--ink-dim);
+  line-height: 1.4;
+}
+
+/* ── FAQ ─────────────────────────────────────────────────────── */
+.tool-faq {
+  margin-top: 48px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  padding-bottom: 48px;
+}
+.faq-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 20px;
+}
+.faq-list {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.faq-item {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+}
+.faq-item:last-child { border-bottom: none; }
+.faq-item dt {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.faq-item dd {
+  font-size: 14px;
+  color: var(--ink-dim);
+  line-height: 1.6;
+  margin: 0;
+}
