@@ -183,8 +183,8 @@ export default function ToolPage() {
       .catch(() => setIsPro(false))
   }, [tool?.pro])
 
-  const pageTitle = tool ? `${tool.name} | PDF Deck` : 'PDF Deck'
-  const pageDesc = tool ? tool.desc : 'Free PDF and file tools.'
+  const pageTitle = tool ? (tool.seoTitle || `${tool.name} | PDF Deck`) : 'PDF Deck'
+  const pageDesc = tool ? (tool.seoDesc || tool.desc) : 'Free PDF and file tools.'
   const pageUrl = tool ? `https://pdfdeck.app/${tool.slug}` : 'https://pdfdeck.app'
 
   if (!tool) {
