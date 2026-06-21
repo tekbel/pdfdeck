@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { DECKS, ALL_TOOLS, toolHref } from '../lib/tools.js'
@@ -132,7 +132,7 @@ const FEATURES = [
   },
 ]
 
-function ToolCard({ tool }) {
+function ToolCard({ tool, isPro }) {
   return (
     <Link to={toolHref(tool)} className="tool-card">
       <div className="tc-icon">
@@ -141,10 +141,16 @@ function ToolCard({ tool }) {
       <div className="tc-body">
         <div className="tc-title-row">
           <h3>{tool.name}</h3>
-          {tool.pro && (
+          {tool.pro && !isPro && (
             <svg className="pro-lock" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-label="Pro feature">
               <rect x="2.5" y="5.5" width="7" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
               <path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+            </svg>
+          )}
+          {tool.pro && isPro && (
+            <svg className="pro-lock" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-label="Pro unlocked" style={{ color: 'var(--green)' }}>
+              <rect x="2.5" y="5.5" width="7" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M4 5.5V4a2 2 0 014 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeDasharray="6 2"/>
             </svg>
           )}
         </div>
@@ -184,6 +190,14 @@ const HOW_STEPS = [
 export default function Home() {
   const heroRef = useRef()
   const mainRef = useRef()
+  const [isPro, setIsPro] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/pro/status')
+      .then(r => r.json())
+      .then(d => setIsPro(d.pro === true))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -392,7 +406,7 @@ export default function Home() {
             <span className="deck-count">{deck.tools.length} tools</span>
           </div>
           <div className="tool-grid">
-            {deck.tools.map(tool => <ToolCard key={tool.slug} tool={tool} />)}
+            {deck.tools.map(tool => <ToolCard key={tool.slug} tool={tool} isPro={isPro} />)}
           </div>
         </section>
       ))}

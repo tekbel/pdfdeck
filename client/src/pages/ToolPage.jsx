@@ -14,15 +14,24 @@ const Breadcrumb = () => (
 
 const fmtSize = b => b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.ceil(b / 1024)} KB`
 
-function parseBold(text) {
-  const parts = text.split(/\*\*(.*?)\*\*/g)
-  return parts.map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part)
+function parseInline(text) {
+  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>
+    if (part.startsWith('*') && part.endsWith('*')) return <em key={i}>{part.slice(1, -1)}</em>
+    return part
+  })
+}
+
+function parseTableRow(line) {
+  return line.split('|').map(c => c.trim()).filter((c, i, arr) => i !== 0 && i !== arr.length - 1)
 }
 
 function renderMarkdown(text) {
   const lines = text.split('\n')
   const out = []
   let listItems = []
+  let tableLines = []
 
   const flushList = () => {
     if (listItems.length) {
@@ -31,24 +40,53 @@ function renderMarkdown(text) {
     }
   }
 
+  const flushTable = () => {
+    if (tableLines.length < 2) { tableLines = []; return }
+    const headers = parseTableRow(tableLines[0])
+    const rows = tableLines.slice(2).map(parseTableRow)
+    out.push(
+      <div key={`tbl-${out.length}`} className="md-table-wrap">
+        <table className="md-table">
+          <thead><tr>{headers.map((h, i) => <th key={i}>{parseInline(h)}</th>)}</tr></thead>
+          <tbody>{rows.map((row, r) => <tr key={r}>{row.map((cell, c) => <td key={c}>{parseInline(cell)}</td>)}</tr>)}</tbody>
+        </table>
+      </div>
+    )
+    tableLines = []
+  }
+
   lines.forEach((line, i) => {
-    if (line.startsWith('## ') || line.startsWith('### ')) {
+    const trimmed = line.trim()
+
+    // Table row
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
       flushList()
-      out.push(<h3 key={i}>{line.replace(/^#{2,3} /, '')}</h3>)
+      tableLines.push(trimmed)
+      return
+    } else {
+      flushTable()
+    }
+
+    if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
+      flushList()
+      out.push(<hr key={i} className="md-hr" />)
+    } else if (line.startsWith('## ') || line.startsWith('### ')) {
+      flushList()
+      out.push(<h3 key={i}>{parseInline(line.replace(/^#{2,3} /, ''))}</h3>)
     } else if (/^[-–]\s/.test(line)) {
-      listItems.push(<li key={i}><span>{parseBold(line.replace(/^[-–]\s/, ''))}</span></li>)
-    } else if (!line.trim()) {
+      listItems.push(<li key={i}><span>{parseInline(line.replace(/^[-–]\s/, ''))}</span></li>)
+    } else if (!trimmed) {
       flushList()
-    } else if (/^\*\*.*\*\*$/.test(line.trim())) {
-      // Entire line is bold — treat as subheading
+    } else if (/^\*\*.*\*\*$/.test(trimmed)) {
       flushList()
-      out.push(<h4 key={i}>{line.replace(/\*\*/g, '')}</h4>)
+      out.push(<h4 key={i}>{trimmed.replace(/\*\*/g, '')}</h4>)
     } else {
       flushList()
-      out.push(<p key={i}>{parseBold(line)}</p>)
+      out.push(<p key={i}>{parseInline(line)}</p>)
     }
   })
   flushList()
+  flushTable()
   return out
 }
 
