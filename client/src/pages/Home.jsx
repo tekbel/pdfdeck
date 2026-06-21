@@ -186,18 +186,24 @@ export default function Home() {
   const mainRef = useRef()
 
   useEffect(() => {
+    let cancelled = false
     let ctx
     let lenis
+    let tickerCb
+    let gsapRef
 
     Promise.all([
       import('gsap'),
       import('gsap/ScrollTrigger'),
       import('lenis'),
     ]).then(([{ default: gsap }, { default: ScrollTrigger }, { default: Lenis }]) => {
+      if (cancelled) return
+      gsapRef = gsap
       gsap.registerPlugin(ScrollTrigger)
       lenis = new Lenis()
       lenis.on('scroll', ScrollTrigger.update)
-      gsap.ticker.add(time => lenis.raf(time * 1000))
+      tickerCb = time => lenis.raf(time * 1000)
+      gsap.ticker.add(tickerCb)
       gsap.ticker.lagSmoothing(0)
 
       ctx = gsap.context(() => {
@@ -303,7 +309,9 @@ export default function Home() {
     })
 
     return () => {
+      cancelled = true
       ctx?.revert()
+      if (tickerCb) gsapRef?.ticker.remove(tickerCb)
       lenis?.destroy()
     }
   }, [])

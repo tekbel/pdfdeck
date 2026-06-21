@@ -12,9 +12,9 @@
 
 ## Phase 2 — Auth and billing
 
-- [ ] Stripe integration for Pro tier ($8/month). Wire checkout to the pricing page. Replace waitlist form with a real "Upgrade" button once billing is ready.
+- [ ] Stripe integration for Pro tier ($6/month). Wire checkout to the pricing page. Replace waitlist form with a real "Upgrade" button once billing is ready.
 - [ ] Email waitlist subscribers when Pro launches with a direct checkout link.
-- [ ] Supabase auth (email + Google). Gate AI tools behind session check instead of the current client-side `tool.pro` flag.
+- [ ] Supabase auth (email + Google). Gate AI tools behind session check instead of the current browser cookie. Cookie-based Pro access is the current MVP — it breaks if the user clears cookies, switches devices, or cancels their subscription (cookie stays valid for 30 days after cancel).
 - [ ] Replace in-memory rate limit with Supabase usage tracking keyed by user ID for logged-in users, IP for guests.
 - [ ] Swap Formspree waitlist for a proper mailing list (Resend, Mailchimp) as volume grows.
 

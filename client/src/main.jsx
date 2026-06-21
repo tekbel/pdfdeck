@@ -8,6 +8,7 @@ import './index.css'
 import Home from './pages/Home.jsx'
 import ToolPage from './pages/ToolPage.jsx'
 import Pricing from './pages/Pricing.jsx'
+import ProSuccess from './pages/ProSuccess.jsx'
 import NotFound from './pages/NotFound.jsx'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
@@ -32,6 +33,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/pro/success" element={<ProSuccess />} />
         <Route path="/:slug" element={<ToolPageKeyed />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import multer from 'multer'
+import { isProUser } from './stripe.js'
 
 const router = Router()
 const upload = multer({
@@ -318,6 +319,9 @@ router.post('/:slug', rateLimit, upload.array('files', 20), async (req, res) => 
   try {
     if (!req.files?.length) return res.status(400).json({ error: 'No file uploaded' })
 
+    const PRO_SLUGS = ['summarize-pdf', 'chat-with-pdf', 'extract-data', 'ocr-pdf']
+    if (PRO_SLUGS.includes(slug) && !isProUser(req))
+      return res.status(403).json({ error: 'Pro subscription required.', pro: false })
     if (slug === 'summarize-pdf') return res.json(await claudeSummarize(req.files))
     if (slug === 'chat-with-pdf') return res.json(await claudeChat(req.files, req.body.question))
     if (slug === 'extract-data')  return res.json(await claudeExtract(req.files))

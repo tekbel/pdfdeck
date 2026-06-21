@@ -135,6 +135,15 @@ export default function ToolPage() {
   const [resizeWidth, setResizeWidth] = useState('')
   const [resizeHeight, setResizeHeight] = useState('')
   const [question, setQuestion] = useState('')
+  const [isPro, setIsPro] = useState(null)
+
+  useEffect(() => {
+    if (!tool?.pro) return
+    fetch('/api/pro/status')
+      .then(r => r.json())
+      .then(d => setIsPro(d.pro === true))
+      .catch(() => setIsPro(false))
+  }, [tool?.pro])
 
   const pageTitle = tool ? `${tool.name} | PDF Deck` : 'PDF Deck'
   const pageDesc = tool ? tool.desc : 'Free PDF and file tools.'
@@ -150,7 +159,11 @@ export default function ToolPage() {
     )
   }
 
-  if (tool.pro) {
+  if (tool.pro && isPro === null) {
+    return <main className="tool-page container"><Breadcrumb /><p style={{ color: 'var(--muted)', marginTop: 32 }}>Loading…</p></main>
+  }
+
+  if (tool.pro && !isPro) {
     return (
       <main className="tool-page container">
         <Helmet>
@@ -214,6 +227,10 @@ export default function ToolPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
+        if (res.status === 403 && data.pro === false) {
+          setIsPro(false)
+          return
+        }
         throw new Error(data.error || `Processing failed (${res.status})`)
       }
 

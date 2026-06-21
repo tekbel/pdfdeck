@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 
@@ -26,67 +26,76 @@ function CheckIcon({ color }) {
   )
 }
 
-function WaitlistForm() {
-  const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+function ManageButton() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = async e => {
-    e.preventDefault()
-    if (!email.trim() || !email.includes('@')) {
-      setError('Enter a valid email address.')
-      return
-    }
-    setError('')
+  const handleManage = async () => {
     setLoading(true)
+    setError('')
     try {
-      const res = await fetch('https://formspree.io/f/xdavvpdo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-      if (!res.ok) throw new Error()
-      setSubmitted(true)
-    } catch {
-      setError('Something went wrong. Please try again.')
-    } finally {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.')
+      window.location.href = data.url
+    } catch (err) {
+      setError(err.message)
       setLoading(false)
     }
   }
 
-  if (submitted) {
-    return (
-      <div className="waitlist-success">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-          <circle cx="9" cy="9" r="8" stroke="var(--green)" strokeWidth="1.5"/>
-          <path d="M5.5 9.5l2.5 2.5 4.5-5" stroke="var(--green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        You're on the list. We'll email you when Pro launches.
-      </div>
-    )
+  return (
+    <div>
+      <button className="btn-primary" onClick={handleManage} disabled={loading} style={{ width: '100%' }}>
+        {loading ? 'Redirecting…' : 'Manage subscription'}
+      </button>
+      {error && <p className="waitlist-error">{error}</p>}
+    </div>
+  )
+}
+
+function UpgradeButton() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleUpgrade = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ origin: window.location.origin }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.')
+      window.location.href = data.url
+    } catch (err) {
+      setError(err.message)
+      setLoading(false)
+    }
   }
 
   return (
-    <form className="waitlist-form" onSubmit={handleSubmit} noValidate>
-      <input
-        className="waitlist-input"
-        type="email"
-        placeholder="your@email.com"
-        value={email}
-        onChange={e => { setEmail(e.target.value); setError('') }}
-        autoComplete="email"
-        disabled={loading}
-      />
-      <button type="submit" className="btn-primary waitlist-btn" disabled={loading}>
-        {loading ? 'Joining…' : 'Join waitlist'}
+    <div>
+      <button className="btn-primary" onClick={handleUpgrade} disabled={loading} style={{ width: '100%' }}>
+        {loading ? 'Redirecting…' : 'Upgrade to Pro'}
       </button>
       {error && <p className="waitlist-error">{error}</p>}
-    </form>
+    </div>
   )
 }
 
 export default function Pricing() {
+  const [isPro, setIsPro] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/pro/status')
+      .then(r => r.json())
+      .then(d => setIsPro(d.pro === true))
+      .catch(() => setIsPro(false))
+  }, [])
+
   return (
     <main className="pricing-page container">
       <Helmet>
@@ -126,7 +135,7 @@ export default function Pricing() {
             <div className="pricing-pro-badge">Pro</div>
             <h2>Pro</h2>
             <div className="pricing-amount">
-              <span className="pricing-price">$8</span>
+              <span className="pricing-price">$6</span>
               <span className="pricing-period">/month</span>
             </div>
             <p className="pricing-desc">Unlimited access plus AI tools for power users.</p>
@@ -137,8 +146,7 @@ export default function Pricing() {
               <li key={f}><CheckIcon color="var(--brand)" />{f}</li>
             ))}
           </ul>
-          <p className="waitlist-label">Pro is launching soon. Join the waitlist to be first in line.</p>
-          <WaitlistForm />
+          {isPro ? <ManageButton /> : <UpgradeButton />}
         </div>
       </div>
     </main>
