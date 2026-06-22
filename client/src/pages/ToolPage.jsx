@@ -92,6 +92,24 @@ function renderMarkdown(text) {
 
 const IMAGE_FORMATS = ['webp', 'jpg', 'png', 'avif', 'gif']
 
+function getAcceptedExts(accept) {
+  if (!accept) return null
+  return accept.split(',').map(s => s.trim().toLowerCase())
+}
+
+function getFileExt(name) {
+  const dot = name.lastIndexOf('.')
+  return dot >= 0 ? name.slice(dot).toLowerCase() : ''
+}
+
+function validateFiles(files, accept) {
+  const exts = getAcceptedExts(accept)
+  if (!exts) return { valid: files, invalid: [] }
+  const valid = files.filter(f => exts.includes(getFileExt(f.name)))
+  const invalid = files.filter(f => !exts.includes(getFileExt(f.name)))
+  return { valid, invalid }
+}
+
 function wordCount(text) {
   return text.trim().split(/\s+/).length
 }
@@ -283,10 +301,24 @@ export default function ToolPage() {
 
   const addFiles = list => {
     const incoming = Array.from(list)
-    setFiles(tool.multi ? [...files, ...incoming] : incoming.slice(0, 1))
+    const { valid, invalid } = validateFiles(incoming, tool.accept)
+
+    if (invalid.length) {
+      const exts = getAcceptedExts(tool.accept)
+      const allowed = exts ? exts.join(', ') : 'any'
+      if (invalid.length === 1) {
+        setError(`"${invalid[0].name}" is not a supported format. This tool only accepts ${allowed} files.`)
+      } else {
+        setError(`${invalid.length} files have unsupported formats. This tool only accepts ${allowed} files.`)
+      }
+      if (!valid.length) return
+    } else {
+      setError('')
+    }
+
+    setFiles(tool.multi ? [...files, ...valid] : valid.slice(0, 1))
     setStatus('idle')
     setResult(null)
-    setError('')
   }
 
   const run = async () => {
@@ -475,7 +507,7 @@ export default function ToolPage() {
         </div>
       )}
 
-      {status === 'error' && (
+      {error && (
         <p style={{ color: 'var(--red)', margin: '20px 0', fontSize: 14 }}>
           {error}
         </p>
