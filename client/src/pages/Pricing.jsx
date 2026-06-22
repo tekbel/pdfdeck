@@ -111,8 +111,9 @@ export default function Pricing() {
       </div>
 
       <div className="pricing-grid">
-        <div className="pricing-card">
+        <div className={`pricing-card${isPro === false ? ' pricing-card--current' : ''}`}>
           <div className="pricing-card-header">
+            {isPro === false && <span className="current-plan-badge">Current plan</span>}
             <h2>Free</h2>
             <div className="pricing-amount">
               <span className="pricing-price">$0</span>
@@ -125,14 +126,14 @@ export default function Pricing() {
               <li key={f}><CheckIcon color="var(--green)" />{f}</li>
             ))}
           </ul>
-          <Link to="/" className="btn-outline" style={{ textDecoration: 'none' }}>
-            Get started free
-          </Link>
+          {isPro !== false && (
+            <Link to="/" className="btn-outline" style={{ textDecoration: 'none' }}>Get started free</Link>
+          )}
         </div>
 
-        <div className="pricing-card pricing-card-pro">
+        <div className={`pricing-card pricing-card-pro${isPro ? ' pricing-card--current' : ''}`}>
           <div className="pricing-card-header">
-            <div className="pricing-pro-badge">Pro</div>
+            {isPro && <span className="current-plan-badge current-plan-badge--pro">Current plan</span>}
             <h2>Pro</h2>
             <div className="pricing-amount">
               <span className="pricing-price">$6</span>

@@ -216,10 +216,27 @@ async function multiImageToPdf(files) {
   return pollJob(data.id, apiKey)
 }
 
+// ---- AI helpers ----
+const AI_PAGE_LIMIT = 20
+
+function getPdfPageCount(buffer) {
+  const text = buffer.toString('latin1')
+  const matches = [...text.matchAll(/\/Count\s+(\d+)/g)]
+  if (!matches.length) return null
+  return Math.max(...matches.map(m => parseInt(m[1])))
+}
+
+function checkPageLimit(file) {
+  const count = getPdfPageCount(file.buffer)
+  if (count !== null && count > AI_PAGE_LIMIT)
+    throw new Error(`This document has ${count} pages. AI tools support up to ${AI_PAGE_LIMIT} pages to keep processing fast and costs manageable.`)
+}
+
 async function claudeChat(files, question) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
   if (!question?.trim()) throw new Error('Please enter a question')
+  checkPageLimit(files[0])
   const pdfBase64 = files[0].buffer.toString('base64')
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -244,6 +261,7 @@ async function claudeChat(files, question) {
 async function claudeExtract(files) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  checkPageLimit(files[0])
   const pdfBase64 = files[0].buffer.toString('base64')
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -268,6 +286,7 @@ async function claudeExtract(files) {
 async function claudeOcr(files) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  checkPageLimit(files[0])
   const pdfBase64 = files[0].buffer.toString('base64')
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -292,6 +311,7 @@ async function claudeOcr(files) {
 async function claudeSummarize(files) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
+  checkPageLimit(files[0])
   const pdfBase64 = files[0].buffer.toString('base64')
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
