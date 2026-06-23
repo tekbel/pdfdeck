@@ -1,8 +1,41 @@
-import { useState, useRef } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { DECKS, toolHref } from '../lib/tools.js'
 import { ToolIcon } from '../lib/icons.jsx'
 import Logo from './Logo.jsx'
+import { useAuth } from '../hooks/useAuth.js'
+
+function AccountDropdown({ user, onLogout, onClose }) {
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) onClose()
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [onClose])
+
+  return (
+    <div className="account-dropdown" ref={ref}>
+      <div className="account-dropdown-email">{user.email}</div>
+      <Link to="/pricing" className="account-dropdown-item" onClick={onClose}>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="2" y="9" width="12" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+          <path d="M5 9V6a3 3 0 016 0v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+        </svg>
+        Manage subscription
+      </Link>
+      <div className="account-dropdown-divider" />
+      <button className="account-dropdown-item account-dropdown-signout" onClick={onLogout}>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6 3H3a1 1 0 00-1 1v8a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Sign out
+      </button>
+    </div>
+  )
+}
 
 const QUICK_LINKS = [
   { label: 'Compress', slug: 'compress-pdf' },
@@ -84,11 +117,23 @@ function MobileMenu({ open, onClose }) {
 export default function Navbar() {
   const [megaOpen, setMegaOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
   const closeTimer = useRef(null)
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   const open  = () => { clearTimeout(closeTimer.current); setMegaOpen(true) }
   const close = () => { closeTimer.current = setTimeout(() => setMegaOpen(false), 180) }
-  const handleNavigate = () => { setMegaOpen(false); setMenuOpen(false) }
+  const handleNavigate = useCallback(() => { setMegaOpen(false); setMenuOpen(false); setAccountOpen(false) }, [])
+  const closeAccount = useCallback(() => setAccountOpen(false), [])
+
+  const handleLogout = useCallback(async () => {
+    setAccountOpen(false)
+    await logout()
+    navigate('/')
+  }, [logout, navigate])
+
+  const initials = user?.email?.slice(0, 2).toUpperCase() ?? ''
 
   return (
     <>
@@ -121,7 +166,30 @@ export default function Navbar() {
 
           <div className="nav-right">
             <NavLink to="/pricing" className="nav-plain-link">Pricing</NavLink>
-            <Link to="/pricing" className="nav-cta">Get started</Link>
+            {user ? (
+              <div className="nav-account-wrap">
+                <button
+                  className="nav-avatar"
+                  onClick={() => setAccountOpen(o => !o)}
+                  aria-label="Account menu"
+                  aria-expanded={accountOpen}
+                >
+                  {initials}
+                </button>
+                {accountOpen && (
+                  <AccountDropdown
+                    user={user}
+                    onLogout={handleLogout}
+                    onClose={closeAccount}
+                  />
+                )}
+              </div>
+            ) : (
+              <>
+                <Link to="/login" className="nav-plain-link" onClick={handleNavigate}>Sign in</Link>
+                <Link to="/signup" className="nav-cta" onClick={handleNavigate}>Get started</Link>
+              </>
+            )}
           </div>
 
           <button

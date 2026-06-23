@@ -1,6 +1,8 @@
 import { createHmac } from 'node:crypto'
 import { Router } from 'express'
 import Stripe from 'stripe'
+import { getUserFromRequest } from '../lib/auth.js'
+import { getSupabaseAdmin } from '../lib/supabase.js'
 
 const router = Router()
 let _stripe
@@ -51,7 +53,7 @@ router.post('/checkout', async (req, res) => {
   }
 })
 
-// POST /api/stripe/verify-session — verify payment and issue Pro cookie
+// POST /api/stripe/verify-session — verify payment, update DB and issue cookie
 router.post('/verify-session', async (req, res) => {
   const { sessionId } = req.body
   if (!sessionId) return res.status(400).json({ error: 'Missing session ID.' })
@@ -59,9 +61,21 @@ router.post('/verify-session', async (req, res) => {
     const session = await getStripe().checkout.sessions.retrieve(sessionId)
     if (session.payment_status !== 'paid')
       return res.status(402).json({ error: 'Payment not completed.' })
+
     const secure = process.env.NODE_ENV === 'production'
     res.cookie(COOKIE_NAME, signValue('pro'), { ...COOKIE_OPTS, secure })
     res.cookie('pdfdeck_customer', signValue(session.customer), { ...COOKIE_OPTS, secure })
+
+    // If user is logged in, persist Pro status in DB
+    const user = await getUserFromRequest(req)
+    if (user) {
+      await getSupabaseAdmin().from('pdf_users').update({
+        is_pro: true,
+        pro_since: new Date().toISOString(),
+        stripe_customer_id: session.customer,
+      }).eq('id', user.id)
+    }
+
     res.json({ ok: true })
   } catch (err) {
     console.error('Verify session error:', err.message)
@@ -71,7 +85,14 @@ router.post('/verify-session', async (req, res) => {
 
 // POST /api/stripe/portal — create a Customer Portal session
 router.post('/portal', async (req, res) => {
-  const customerId = verifyValue(req.cookies?.pdfdeck_customer)
+  // Prefer DB (logged-in user), fall back to cookie
+  let customerId = null
+  const user = await getUserFromRequest(req)
+  if (user?.stripe_customer_id) {
+    customerId = user.stripe_customer_id
+  } else {
+    customerId = verifyValue(req.cookies?.pdfdeck_customer)
+  }
   if (!customerId) return res.status(403).json({ error: 'No active subscription found.' })
   const base = process.env.CLIENT_URL || req.body?.origin || 'http://localhost:5173'
   try {
@@ -105,6 +126,9 @@ router.post('/webhook', async (req, res) => {
   if (event.type === 'customer.subscription.deleted') {
     const sub = event.data.object
     console.log('Subscription cancelled:', sub.customer)
+    await getSupabaseAdmin().from('pdf_users')
+      .update({ is_pro: false })
+      .eq('stripe_customer_id', sub.customer)
   }
 
   res.json({ received: true })

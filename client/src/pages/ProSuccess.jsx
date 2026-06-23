@@ -49,7 +49,7 @@ export default function ProSuccess() {
         <>
           <h1 style={{ fontSize: '1.8rem', marginBottom: 12 }}>Something went wrong.</h1>
           <p style={{ color: 'var(--muted)', marginBottom: 32 }}>
-            Your payment was processed but we could not activate Pro. Email us at support@pdfdeck.app and we'll sort it out.
+            Your payment was processed but we could not activate Pro. Email us at support@addisstack.com and we'll sort it out.
           </p>
           <Link to="/pricing" className="btn-outline" style={{ textDecoration: 'none' }}>
             Back to pricing

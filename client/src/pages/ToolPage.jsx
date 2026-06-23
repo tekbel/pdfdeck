@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { findTool, ALL_TOOLS } from '../lib/tools.js'
+import { useToast } from '../components/Toast.jsx'
 
 const Breadcrumb = () => (
   <Link to="/" className="breadcrumb">
@@ -180,12 +181,12 @@ export default function ToolPage() {
   const { slug } = useParams()
   const tool = findTool(slug)
   const inputRef = useRef(null)
+  const toast = useToast()
   const [files, setFiles] = useState([])
   const [drag, setDrag] = useState(false)
   const [status, setStatus] = useState('idle')
   const [progress, setProgress] = useState(0)
   const [result, setResult] = useState(null)
-  const [error, setError] = useState('')
   const [imageFormat, setImageFormat] = useState('webp')
   const [pageRange, setPageRange] = useState('')
   const [resizeWidth, setResizeWidth] = useState('')
@@ -306,14 +307,11 @@ export default function ToolPage() {
     if (invalid.length) {
       const exts = getAcceptedExts(tool.accept)
       const allowed = exts ? exts.join(', ') : 'any'
-      if (invalid.length === 1) {
-        setError(`"${invalid[0].name}" is not a supported format. This tool only accepts ${allowed} files.`)
-      } else {
-        setError(`${invalid.length} files have unsupported formats. This tool only accepts ${allowed} files.`)
-      }
+      const msg = invalid.length === 1
+        ? `"${invalid[0].name}" is not supported. This tool only accepts ${allowed} files.`
+        : `${invalid.length} files have unsupported formats. This tool only accepts ${allowed} files.`
+      toast.error(msg)
       if (!valid.length) return
-    } else {
-      setError('')
     }
 
     setFiles(tool.multi ? [...files, ...valid] : valid.slice(0, 1))
@@ -325,7 +323,6 @@ export default function ToolPage() {
     if (!files.length) return
     setStatus('working')
     setProgress(0)
-    setError('')
 
     const tick = setInterval(() => setProgress(p => Math.min(p + Math.random() * 18, 90)), 350)
 
@@ -358,8 +355,8 @@ export default function ToolPage() {
       setStatus('done')
     } catch (err) {
       clearInterval(tick)
-      setStatus('error')
-      setError(err.message)
+      setStatus('idle')
+      toast.error(err.message)
     }
   }
 
@@ -505,12 +502,6 @@ export default function ToolPage() {
         <div className="progress-track" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
           <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
-      )}
-
-      {error && (
-        <p style={{ color: 'var(--red)', margin: '20px 0', fontSize: 14 }}>
-          {error}
-        </p>
       )}
 
       {status === 'done' && result?.downloadUrl && (
