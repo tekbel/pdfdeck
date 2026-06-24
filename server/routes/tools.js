@@ -2,6 +2,8 @@ import { Router } from 'express'
 import multer from 'multer'
 import { PDFDocument } from 'pdf-lib'
 import { isProUser } from './stripe.js'
+import { getSupabaseAdmin } from '../lib/supabase.js'
+import { verifyToken } from '../lib/auth.js'
 
 const router = Router()
 const upload = multer({
@@ -9,23 +11,38 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 })
 
-// ---- Rate limiting (per-IP, in-memory; swap for Supabase in Phase 2) ----
-const usage = new Map()
+// ---- Rate limiting (Supabase-backed, keyed by user ID or IP) ----
 const FREE_DAILY_LIMIT = 5
 const PRO_DAILY_LIMIT = 15
 
-function rateLimit(req, res, next) {
+async function rateLimit(req, res, next) {
   const pro = isProUser(req)
-  const key = req.ip + ':' + new Date().toISOString().slice(0, 10)
-  const count = (usage.get(key) || 0) + 1
-  usage.set(key, count)
   const limit = pro ? PRO_DAILY_LIMIT : FREE_DAILY_LIMIT
-  if (count > limit) {
-    const msg = pro
-      ? 'You have reached your daily limit. Try again tomorrow.'
-      : `Free plan allows ${FREE_DAILY_LIMIT} jobs per day. Upgrade to Pro for more.`
-    return res.status(429).json({ error: msg })
+  const today = new Date().toISOString().slice(0, 10)
+
+  const supabaseUser = await verifyToken(req)
+  const key = supabaseUser ? supabaseUser.id : `ip:${req.ip}`
+
+  try {
+    const admin = getSupabaseAdmin()
+    const { count } = await admin
+      .from('pdf_usage')
+      .select('*', { count: 'exact', head: true })
+      .eq('key', key)
+      .eq('date', today)
+
+    if ((count ?? 0) >= limit) {
+      const msg = pro
+        ? 'You have reached your daily limit. Try again tomorrow.'
+        : `Free plan allows ${FREE_DAILY_LIMIT} jobs per day. Upgrade to Pro for more.`
+      return res.status(429).json({ error: msg })
+    }
+
+    await admin.from('pdf_usage').insert({ key, date: today })
+  } catch (err) {
+    console.error('[rateLimit] Supabase error, failing open:', err.message)
   }
+
   next()
 }
 
