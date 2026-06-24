@@ -115,7 +115,7 @@ function wordCount(text) {
   return text.trim().split(/\s+/).length
 }
 
-function TextResult({ text, downloadName, downloadMime = 'text/plain', resetLabel = 'Start over', onReset }) {
+function TextResult({ text, downloadName, downloadMime = 'text/plain', resetLabel = 'Start over', onReset, free = false }) {
   const [copied, setCopied] = useState(false)
   const rendered = useMemo(() => renderMarkdown(text), [text])
 
@@ -136,6 +136,32 @@ function TextResult({ text, downloadName, downloadMime = 'text/plain', resetLabe
   }, [text, downloadName, downloadMime])
 
   const ext = downloadName?.split('.').pop().toUpperCase() || 'TXT'
+
+  if (free) {
+    return (
+      <div className="summary-box free-result">
+        <div className="summary-meta">
+          <span className="free-badge">Preview</span>
+          <span style={{ color: 'var(--ink-faint)', fontSize: 13 }}>Upgrade to Pro for the full summary</span>
+        </div>
+        <p className="free-result-preview">{text}</p>
+        <div className="free-result-blur-section">
+          <p className="free-result-blur" aria-hidden="true">{text}</p>
+          <div className="free-result-overlay">
+            <div className="free-result-cta">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect x="4" y="9" width="12" height="9" rx="2" stroke="var(--brand)" strokeWidth="1.6"/>
+                <path d="M7 9V7a3 3 0 016 0v2" stroke="var(--brand)" strokeWidth="1.6" strokeLinecap="round"/>
+              </svg>
+              <p>Get the full breakdown with key points, insights, and takeaways.</p>
+              <Link to="/pricing" className="btn-primary" style={{ textDecoration: 'none' }}>Upgrade to Pro</Link>
+            </div>
+          </div>
+        </div>
+        <button className="btn-ghost" style={{ marginTop: 16 }} onClick={onReset}>{resetLabel}</button>
+      </div>
+    )
+  }
 
   return (
     <div className="summary-box">
@@ -193,14 +219,15 @@ export default function ToolPage() {
   const [resizeHeight, setResizeHeight] = useState('')
   const [question, setQuestion] = useState('')
   const [isPro, setIsPro] = useState(null)
+  const [pageConfirm, setPageConfirm] = useState(null)
 
   useEffect(() => {
-    if (!tool?.pro) return
+    if (!tool?.pro && !tool?.ai) return
     fetch('/api/pro/status')
       .then(r => r.json())
       .then(d => setIsPro(d.pro === true))
       .catch(() => setIsPro(false))
-  }, [tool?.pro])
+  }, [tool?.pro, tool?.ai])
 
   const pageTitle = tool ? (tool.seoTitle || `${tool.name} | PDF Deck`) : 'PDF Deck'
   const pageDesc = tool ? (tool.seoDesc || tool.desc) : 'Free PDF and file tools.'
@@ -295,6 +322,12 @@ export default function ToolPage() {
             Upgrade to Pro
           </Link>
           <Link to="/" className="btn-ghost">Browse free tools</Link>
+          {tool.ai && (
+            <p className="pro-gate-teaser">
+              Not ready to upgrade?{' '}
+              <Link to="/summarize-pdf" style={{ color: 'var(--brand)' }}>Try a free AI summary</Link> first.
+            </p>
+          )}
         </div>
       </main>
     )
@@ -317,10 +350,12 @@ export default function ToolPage() {
     setFiles(tool.multi ? [...files, ...valid] : valid.slice(0, 1))
     setStatus('idle')
     setResult(null)
+    setPageConfirm(null)
   }
 
-  const run = async () => {
+  const run = async ({ truncate = false } = {}) => {
     if (!files.length) return
+    setPageConfirm(null)
     setStatus('working')
     setProgress(0)
 
@@ -336,6 +371,7 @@ export default function ToolPage() {
         if (resizeWidth)  body.append('width', resizeWidth)
         if (resizeHeight) body.append('height', resizeHeight)
       }
+      if (truncate) body.append('truncate', 'true')
 
       const res = await fetch(`/api/tools/${slug}`, { method: 'POST', body })
       clearInterval(tick)
@@ -350,6 +386,13 @@ export default function ToolPage() {
       }
 
       const data = await res.json()
+
+      if (data.tooManyPages) {
+        setPageConfirm({ count: data.pageCount })
+        setStatus('idle')
+        return
+      }
+
       setProgress(100)
       setResult(data)
       setStatus('done')
@@ -532,6 +575,7 @@ export default function ToolPage() {
           downloadName={files[0] ? `summary-${files[0].name.replace(/\.pdf$/i, '')}.txt` : 'summary.txt'}
           resetLabel="Summarize another"
           onReset={() => { setStatus('idle'); setResult(null); setFiles([]) }}
+          free={result.free === true}
         />
       )}
 
@@ -563,9 +607,23 @@ export default function ToolPage() {
         />
       )}
 
-      {status !== 'done' && (
+      {pageConfirm && (
+        <div className="page-confirm-banner">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="10" cy="10" r="9" stroke="var(--brand)" strokeWidth="1.6"/>
+            <path d="M10 6v5M10 14v.5" stroke="var(--brand)" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          <p>This document has <strong>{pageConfirm.count} pages</strong>. Only the first 20 will be processed.</p>
+          <div className="page-confirm-actions">
+            <button className="btn-primary" onClick={() => run({ truncate: true })}>Process first 20 pages</button>
+            <button className="btn-ghost" onClick={() => setPageConfirm(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {status !== 'done' && !pageConfirm && (
         <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <button className="btn-primary" onClick={run} disabled={!files.length || status === 'working' || (slug === 'chat-with-pdf' && !question.trim())}>
+          <button className="btn-primary" onClick={() => run()} disabled={!files.length || status === 'working' || (slug === 'chat-with-pdf' && !question.trim())}>
             {status === 'working' ? 'Working…' : tool.name}
           </button>
         </div>

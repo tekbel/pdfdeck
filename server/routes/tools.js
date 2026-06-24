@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import multer from 'multer'
+import { PDFDocument } from 'pdf-lib'
 import { isProUser } from './stripe.js'
 
 const router = Router()
@@ -8,16 +9,23 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 })
 
-// ---- Rate limiting (per-IP, in-memory; swap for Supabase in production) ----
+// ---- Rate limiting (per-IP, in-memory; swap for Supabase in Phase 2) ----
 const usage = new Map()
-const FREE_DAILY_LIMIT = 10
+const FREE_DAILY_LIMIT = 5
+const PRO_DAILY_LIMIT = 15
 
 function rateLimit(req, res, next) {
+  const pro = isProUser(req)
   const key = req.ip + ':' + new Date().toISOString().slice(0, 10)
   const count = (usage.get(key) || 0) + 1
   usage.set(key, count)
-  if (count > FREE_DAILY_LIMIT)
-    return res.status(429).json({ error: `Free limit is ${FREE_DAILY_LIMIT} jobs per day. Sign in for more.` })
+  const limit = pro ? PRO_DAILY_LIMIT : FREE_DAILY_LIMIT
+  if (count > limit) {
+    const msg = pro
+      ? 'You have reached your daily limit. Try again tomorrow.'
+      : `Free plan allows ${FREE_DAILY_LIMIT} jobs per day. Upgrade to Pro for more.`
+    return res.status(429).json({ error: msg })
+  }
   next()
 }
 
@@ -217,7 +225,8 @@ async function multiImageToPdf(files) {
 }
 
 // ---- AI helpers ----
-const AI_PAGE_LIMIT = 20
+const FREE_AI_PAGE_LIMIT = 5
+const PRO_AI_PAGE_LIMIT = 20
 
 function getPdfPageCount(buffer) {
   const text = buffer.toString('latin1')
@@ -226,17 +235,23 @@ function getPdfPageCount(buffer) {
   return Math.max(...matches.map(m => parseInt(m[1])))
 }
 
-function checkPageLimit(file) {
-  const count = getPdfPageCount(file.buffer)
-  if (count !== null && count > AI_PAGE_LIMIT)
-    throw new Error(`This document has ${count} pages. AI tools support up to ${AI_PAGE_LIMIT} pages to keep processing fast and costs manageable.`)
+async function trimPdfToPages(buffer, maxPages) {
+  const src = await PDFDocument.load(buffer, { ignoreEncryption: true })
+  const total = src.getPageCount()
+  if (total <= maxPages) return buffer
+  const out = await PDFDocument.create()
+  const pages = await out.copyPages(src, [...Array(maxPages).keys()])
+  pages.forEach(p => out.addPage(p))
+  return Buffer.from(await out.save())
 }
 
 async function claudeChat(files, question) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
   if (!question?.trim()) throw new Error('Please enter a question')
-  checkPageLimit(files[0])
+  const count = getPdfPageCount(files[0].buffer)
+  if (count !== null && count > PRO_AI_PAGE_LIMIT)
+    throw new Error(`This document has ${count} pages. AI tools support up to ${PRO_AI_PAGE_LIMIT} pages.`)
   const pdfBase64 = files[0].buffer.toString('base64')
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -261,7 +276,9 @@ async function claudeChat(files, question) {
 async function claudeExtract(files) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
-  checkPageLimit(files[0])
+  const count = getPdfPageCount(files[0].buffer)
+  if (count !== null && count > PRO_AI_PAGE_LIMIT)
+    throw new Error(`This document has ${count} pages. AI tools support up to ${PRO_AI_PAGE_LIMIT} pages.`)
   const pdfBase64 = files[0].buffer.toString('base64')
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -286,7 +303,9 @@ async function claudeExtract(files) {
 async function claudeOcr(files) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
-  checkPageLimit(files[0])
+  const count = getPdfPageCount(files[0].buffer)
+  if (count !== null && count > PRO_AI_PAGE_LIMIT)
+    throw new Error(`This document has ${count} pages. AI tools support up to ${PRO_AI_PAGE_LIMIT} pages.`)
   const pdfBase64 = files[0].buffer.toString('base64')
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -308,29 +327,51 @@ async function claudeOcr(files) {
   return { text: data.content.filter(b => b.type === 'text').map(b => b.text).join('\n') }
 }
 
-async function claudeSummarize(files) {
+async function claudeSummarize(files, { isFree = false, truncate = false } = {}) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
-  checkPageLimit(files[0])
-  const pdfBase64 = files[0].buffer.toString('base64')
+
+  let buffer = files[0].buffer
+  const pageCount = getPdfPageCount(buffer)
+
+  if (isFree) {
+    // Free tier: silently trim to 5 pages, return partial output
+    buffer = await trimPdfToPages(buffer, FREE_AI_PAGE_LIMIT)
+  } else {
+    // Pro tier: check page count
+    if (pageCount !== null && pageCount > PRO_AI_PAGE_LIMIT) {
+      if (!truncate) return { tooManyPages: true, pageCount }
+      buffer = await trimPdfToPages(buffer, PRO_AI_PAGE_LIMIT)
+    }
+  }
+
+  const pdfBase64 = buffer.toString('base64')
+
+  const prompt = isFree
+    ? 'Write 2 clear, specific sentences that capture what this document is about and who it is for. Plain prose only — no markdown, no headers, no bullet points. Make it sound like a knowledgeable colleague giving a quick briefing.'
+    : 'Summarize this document. Lead with a 2-sentence overview, then list the key points as a markdown list. Be concrete and faithful to the document.'
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
+      max_tokens: isFree ? 180 : 1500,
       messages: [{
         role: 'user',
         content: [
           { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
-          { type: 'text', text: 'Summarize this document. Lead with a 2-sentence overview, then list the key points. Be concrete and faithful to the document.' },
+          { type: 'text', text: prompt },
         ],
       }],
     }),
   })
   if (!res.ok) throw new Error('AI service unavailable')
-  const data = await res.json()
-  return { summary: data.content.filter(b => b.type === 'text').map(b => b.text).join('\n') }
+  const json = await res.json()
+  const full = json.content.filter(b => b.type === 'text').map(b => b.text).join('\n')
+
+  if (isFree) return { summary: full.trim(), free: true }
+  return { summary: full }
 }
 
 // ---- Main dispatch ----
@@ -339,10 +380,15 @@ router.post('/:slug', rateLimit, upload.array('files', 20), async (req, res) => 
   try {
     if (!req.files?.length) return res.status(400).json({ error: 'No file uploaded' })
 
-    const PRO_SLUGS = ['summarize-pdf', 'chat-with-pdf', 'extract-data', 'ocr-pdf']
+    const PRO_SLUGS = ['chat-with-pdf', 'extract-data', 'ocr-pdf']
     if (PRO_SLUGS.includes(slug) && !isProUser(req))
       return res.status(403).json({ error: 'Pro subscription required.', pro: false })
-    if (slug === 'summarize-pdf') return res.json(await claudeSummarize(req.files))
+
+    if (slug === 'summarize-pdf') {
+      const isFree = !isProUser(req)
+      const truncate = req.body.truncate === 'true'
+      return res.json(await claudeSummarize(req.files, { isFree, truncate }))
+    }
     if (slug === 'chat-with-pdf') return res.json(await claudeChat(req.files, req.body.question))
     if (slug === 'extract-data')  return res.json(await claudeExtract(req.files))
     if (slug === 'ocr-pdf')       return res.json(await claudeOcr(req.files))

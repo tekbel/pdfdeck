@@ -223,7 +223,6 @@ export const DECKS = [
         accept: '.pdf',
         kind: 'ai',
         ai: true,
-        pro: true,
         seoTitle: 'Summarize PDF with AI | Key Points in Seconds — PDFDeck',
         seoDesc: 'Summarize any PDF document with AI. Get key points, insights, and takeaways in seconds. No sign up. Files deleted immediately after processing.',
         related: ['chat-with-pdf', 'extract-data'],
