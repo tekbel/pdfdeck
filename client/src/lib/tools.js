@@ -218,7 +218,7 @@ export const DECKS = [
       {
         slug: 'summarize-pdf',
         name: 'Summarize PDF',
-        icon: '✨',
+        icon: '📋',
         desc: 'Key points from any document in seconds.',
         accept: '.pdf',
         kind: 'ai',
