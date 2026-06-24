@@ -11,14 +11,18 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 })
 
-// ---- Rate limiting (Supabase-backed, keyed by user ID or IP) ----
+// ---- Rate limiting (Supabase-backed, in-memory fallback for CI/offline) ----
 const FREE_DAILY_LIMIT = 5
 const PRO_DAILY_LIMIT = 15
+const fallbackUsage = new Map()
 
 async function rateLimit(req, res, next) {
   const pro = isProUser(req)
   const limit = pro ? PRO_DAILY_LIMIT : FREE_DAILY_LIMIT
   const today = new Date().toISOString().slice(0, 10)
+  const msg = pro
+    ? 'You have reached your daily limit. Try again tomorrow.'
+    : `Daily free limit is ${FREE_DAILY_LIMIT} jobs. Upgrade to Pro for more.`
 
   const supabaseUser = await verifyToken(req)
   const key = supabaseUser ? supabaseUser.id : `ip:${req.ip}`
@@ -31,16 +35,14 @@ async function rateLimit(req, res, next) {
       .eq('key', key)
       .eq('date', today)
 
-    if ((count ?? 0) >= limit) {
-      const msg = pro
-        ? 'You have reached your daily limit. Try again tomorrow.'
-        : `Free plan allows ${FREE_DAILY_LIMIT} jobs per day. Upgrade to Pro for more.`
-      return res.status(429).json({ error: msg })
-    }
-
+    if ((count ?? 0) >= limit) return res.status(429).json({ error: msg })
     await admin.from('pdf_usage').insert({ key, date: today })
   } catch (err) {
-    console.error('[rateLimit] Supabase error, failing open:', err.message)
+    console.error('[rateLimit] Supabase error, using in-memory fallback:', err.message)
+    const fbKey = key + ':' + today
+    const count = (fallbackUsage.get(fbKey) || 0) + 1
+    fallbackUsage.set(fbKey, count)
+    if (count > limit) return res.status(429).json({ error: msg })
   }
 
   next()
