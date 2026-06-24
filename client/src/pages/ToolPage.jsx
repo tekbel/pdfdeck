@@ -115,7 +115,7 @@ function wordCount(text) {
   return text.trim().split(/\s+/).length
 }
 
-function TextResult({ text, downloadName, downloadMime = 'text/plain', resetLabel = 'Start over', onReset, free = false }) {
+function TextResult({ text, downloadName, downloadMime = 'text/plain', resetLabel = 'Start over', onReset, free = false, upgradeUrl = '/pricing' }) {
   const [copied, setCopied] = useState(false)
   const rendered = useMemo(() => renderMarkdown(text), [text])
 
@@ -154,7 +154,7 @@ function TextResult({ text, downloadName, downloadMime = 'text/plain', resetLabe
                 <path d="M7 9V7a3 3 0 016 0v2" stroke="var(--brand)" strokeWidth="1.6" strokeLinecap="round"/>
               </svg>
               <p>Get the full breakdown with key points, insights, and takeaways.</p>
-              <Link to={`/pricing?next=/${slug}`} className="btn-primary" style={{ textDecoration: 'none' }}>Upgrade to Pro</Link>
+              <Link to={upgradeUrl} className="btn-primary" style={{ textDecoration: 'none' }}>Upgrade to Pro</Link>
             </div>
           </div>
         </div>
@@ -576,6 +576,7 @@ export default function ToolPage() {
           resetLabel="Summarize another"
           onReset={() => { setStatus('idle'); setResult(null); setFiles([]) }}
           free={result.free === true}
+          upgradeUrl={`/pricing?next=/${slug}`}
         />
       )}
 
