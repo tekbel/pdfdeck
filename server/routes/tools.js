@@ -245,7 +245,7 @@ async function multiImageToPdf(files) {
 
 // ---- AI helpers ----
 const FREE_AI_PAGE_LIMIT = 5
-const PRO_AI_PAGE_LIMIT = 20
+const PRO_AI_PAGE_LIMIT = 50
 
 function getPdfPageCount(buffer) {
   const text = buffer.toString('latin1')

@@ -39,11 +39,14 @@ export function isProUser(req) {
 // POST /api/stripe/checkout — create a Checkout Session and return the URL
 router.post('/checkout', async (req, res) => {
   const base = process.env.CLIENT_URL || req.body?.origin || 'http://localhost:5173'
+  const rawNext = req.body?.next || ''
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : ''
+  const nextParam = next ? `&next=${encodeURIComponent(next)}` : ''
   try {
     const session = await getStripe().checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
-      success_url: `${base}/pro/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${base}/pro/success?session_id={CHECKOUT_SESSION_ID}${nextParam}`,
       cancel_url: `${base}/pricing`,
     })
     res.json({ url: session.url })
