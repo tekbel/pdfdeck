@@ -13,6 +13,7 @@ export const DECKS = [
         kind: 'convert',
         seoTitle: 'Convert PDF to Word Free Online | Layout Preserved — PDFDeck',
         seoDesc: 'Convert PDF to editable Word documents online for free. Preserves layout and formatting. No sign up needed. Files deleted immediately after conversion.',
+        body: 'Convert PDF to Word documents in seconds without losing your formatting. PDFDeck preserves text, tables, and layout so the resulting DOCX opens cleanly in Microsoft Word or Google Docs. No account is required and no watermarks are added to your file. Your PDF is processed entirely in memory and deleted immediately once you download the result.',
         related: ['word-to-pdf', 'compress-pdf'],
         faq: [
           { q: 'Is PDF to Word conversion free?', a: 'Yes, completely free. No account required and no watermarks added to your file.' },
@@ -29,6 +30,7 @@ export const DECKS = [
         kind: 'convert',
         seoTitle: 'Convert Word to PDF Free Online | DOC & DOCX — PDFDeck',
         seoDesc: 'Convert Word documents to PDF online for free. Keeps your formatting intact. No software to install. No sign up. Files deleted immediately.',
+        body: 'Convert Word documents to PDF online without installing Microsoft Office or any other software. PDFDeck converts DOC and DOCX files while preserving fonts, spacing, tables, and images exactly as they appear in Word. The resulting PDF is universally readable across every device and PDF viewer. Your file is processed in memory and deleted immediately after download.',
         related: ['pdf-to-word', 'merge-pdf'],
         faq: [
           { q: 'Is Word to PDF conversion free?', a: 'Yes. No account or software installation needed. Upload your file and download the PDF.' },
@@ -45,6 +47,7 @@ export const DECKS = [
         kind: 'compress',
         seoTitle: 'Compress PDF | Reduce File Size Free Online — PDFDeck',
         seoDesc: 'Compress PDF files online for free. Reduce file size without visible quality loss. No sign up needed. Files deleted immediately after processing.',
+        body: 'Reduce PDF file size without noticeable quality loss, making documents easier to email, upload to a portal, or share online. PDFDeck compresses images and stream data inside the PDF while keeping text and document structure intact. Files with many embedded images typically shrink by 50 to 80 percent. Your file is processed in memory and never written to any server — it is gone the moment you close the tab.',
         related: ['merge-pdf', 'split-pdf'],
         faq: [
           { q: 'How much will my PDF shrink?', a: 'Compression rates vary by content. PDFs with many images typically compress by 50 to 80 percent. Text-only PDFs compress less.' },
@@ -62,6 +65,7 @@ export const DECKS = [
         multi: true,
         seoTitle: 'Merge PDF Files Free Online | No Sign Up — PDFDeck',
         seoDesc: 'Merge multiple PDF files into one online for free. Drag to reorder, download instantly. No sign up. Files deleted immediately.',
+        body: 'Merge multiple PDF files into a single document in seconds without installing any software. Add your files in the order you want them to appear and PDFDeck combines them into one clean PDF. There is no limit on the number of files per session. All files are processed in memory and permanently deleted after you download — nothing is kept on any server.',
         related: ['split-pdf', 'compress-pdf'],
         faq: [
           { q: 'How many PDFs can I merge at once?', a: 'You can merge as many PDFs as you need in a single job. Add them in any order before combining.' },
@@ -78,6 +82,7 @@ export const DECKS = [
         kind: 'split',
         seoTitle: 'Split PDF | Extract Pages Free Online — PDFDeck',
         seoDesc: 'Split PDF files into separate pages or extract a page range online for free. No sign up. Files deleted immediately after processing.',
+        body: 'Extract specific pages or page ranges from any PDF without altering the rest of the document. Enter a range like 1-3, individual pages like 2, 5, 8, or a combination such as 1-3, 7, 10-12. Useful for pulling a single section from a long report, isolating a form page, or sharing one chapter of a book. Your file is processed in memory and nothing is retained after download.',
         related: ['merge-pdf', 'pdf-to-jpg'],
         faq: [
           { q: 'How do I specify which pages to extract?', a: 'Enter a range like 1-3, individual pages like 1, 4, 7, or combine them: 1-3, 5, 8-10.' },
@@ -94,6 +99,7 @@ export const DECKS = [
         kind: 'convert',
         seoTitle: 'PDF to JPG | Convert PDF Pages to Images Free — PDFDeck',
         seoDesc: 'Convert PDF pages to high-quality JPG images online for free. Download all pages instantly. No sign up. Files deleted immediately.',
+        body: 'Convert every page of a PDF to a high-quality JPG image — useful for sharing slides as visuals, importing PDF content into design tools, or previewing pages without a PDF reader. Each page is exported as a separate image file. Pages are rendered at high resolution suitable for both screen display and most print needs. Your file is processed in memory and deleted immediately after conversion.',
         related: ['jpg-to-pdf', 'split-pdf'],
         faq: [
           { q: 'What resolution are the output images?', a: 'Pages are exported at high resolution. Quality is suitable for screen use and most print needs.' },
@@ -111,6 +117,7 @@ export const DECKS = [
         multi: true,
         seoTitle: 'JPG to PDF | Convert Images to PDF Free Online — PDFDeck',
         seoDesc: 'Convert JPG images to PDF online for free. Combine multiple photos into one PDF document. No sign up. Files deleted immediately.',
+        body: 'Convert JPG, JPEG, and PNG images into a single PDF document in seconds. Add multiple images at once and they are combined into one file in the order you upload them — useful for bundling scanned pages, photo sets, or screenshots into one shareable document. No account or software installation needed. Files are processed in memory and deleted immediately after download.',
         related: ['pdf-to-jpg', 'image-to-pdf'],
         faq: [
           { q: 'Can I combine multiple images into one PDF?', a: 'Yes. Upload multiple images at once and they will all be combined into a single PDF in the order you add them.' },
@@ -127,6 +134,7 @@ export const DECKS = [
         kind: 'convert',
         seoTitle: 'PDF to Excel | Extract Tables to XLSX Free Online — PDFDeck',
         seoDesc: 'Convert PDF tables to editable Excel spreadsheets online for free. Pull data out of any PDF into XLSX. No sign up. Files deleted immediately.',
+        body: 'Extract tables from PDF documents and export them as XLSX spreadsheets ready to open in Microsoft Excel or Google Sheets. Accuracy is highest for digitally created PDFs with clear grid layouts — scanned PDFs with tables benefit from running OCR first. No account is needed and no data is retained after you download your file.',
         related: ['extract-data', 'pdf-to-word'],
         faq: [
           { q: 'How accurate is the table extraction?', a: 'Accuracy is highest for digitally created PDFs with clean table layouts. Scanned PDFs may benefit from running OCR first.' },
@@ -150,6 +158,7 @@ export const DECKS = [
         kind: 'convert',
         seoTitle: 'Image Converter | Convert PNG, JPG, WebP, HEIC Free — PDFDeck',
         seoDesc: 'Convert images between PNG, JPG, WebP, HEIC, and AVIF online for free. Fast and free. No sign up. Files deleted immediately.',
+        body: 'Convert images between PNG, JPG, WebP, HEIC, and AVIF formats directly in your browser. WebP and AVIF produce significantly smaller files than JPG at the same visual quality, making them ideal for websites. HEIC is the default format on iPhones and often needs converting for compatibility with Windows or older software. Files are processed in memory and deleted immediately after conversion.',
         related: ['compress-image', 'resize-image'],
         faq: [
           { q: 'Which image formats are supported?', a: 'PNG, JPG, WebP, HEIC, and AVIF. Convert from any of these formats to any other.' },
@@ -167,6 +176,7 @@ export const DECKS = [
         multi: true,
         seoTitle: 'Compress Image | Reduce Image File Size Free Online — PDFDeck',
         seoDesc: 'Compress images online for free. Reduce file size without visible quality loss. Supports JPG, PNG, and WebP. No sign up. Files deleted immediately.',
+        body: 'Reduce image file size without visible quality loss — useful before uploading photos to a website, attaching them to an email, or reducing storage usage. PDFDeck compresses JPG, PNG, and WebP files using settings optimized per format. You can compress multiple images in a single session. Files are processed in memory and deleted immediately after download.',
         related: ['resize-image', 'image-converter'],
         faq: [
           { q: 'Will compressing reduce visible quality?', a: 'The tool is tuned to minimize file size with minimal visible quality loss. Compression settings are optimized per image type.' },
@@ -183,6 +193,7 @@ export const DECKS = [
         kind: 'edit',
         seoTitle: 'Resize Image | Change Dimensions Free Online — PDFDeck',
         seoDesc: 'Resize images to exact dimensions or scale by percentage online for free. Supports JPG, PNG, WebP. No sign up. Files deleted immediately.',
+        body: 'Resize images to exact pixel dimensions or scale proportionally to fit a target size. Leave one dimension blank and the image scales automatically while maintaining the original aspect ratio. Supports JPG, PNG, and WebP. Useful for resizing photos for social media, preparing product images, or reducing dimensions before uploading. Your file is processed in memory and deleted immediately after download.',
         related: ['compress-image', 'image-to-pdf'],
         faq: [
           { q: 'Can I scale an image proportionally?', a: 'Yes. Leave one dimension blank and the image scales proportionally to match the dimension you set.' },
@@ -200,6 +211,7 @@ export const DECKS = [
         multi: true,
         seoTitle: 'Image to PDF | Convert Photos & Scans to PDF Free — PDFDeck',
         seoDesc: 'Convert images to PDF online for free. Turn photos, scans, and screenshots into a single PDF document. No sign up. Files deleted immediately.',
+        body: 'Convert photos, scans, and screenshots into a single PDF document in seconds. Add multiple images at once and they are combined into one PDF in the order you upload them. Accepts JPG, PNG, WebP, and HEIC. Useful for bundling scanned receipts, packaging project screenshots, or converting a photo series into a shareable document. Files are processed in memory and deleted immediately after conversion.',
         related: ['jpg-to-pdf', 'compress-pdf'],
         faq: [
           { q: 'How many images can I convert at once?', a: 'Multiple images are accepted and combined into a single PDF in the order you add them.' },
@@ -225,6 +237,7 @@ export const DECKS = [
         ai: true,
         seoTitle: 'Summarize PDF with AI | Key Points in Seconds — PDFDeck',
         seoDesc: 'Summarize any PDF document with AI. Get key points, insights, and takeaways in seconds. No sign up. Files deleted immediately after processing.',
+        body: 'Upload any PDF and get a structured summary in seconds. The AI reads the full document and returns a concise overview followed by the key points, findings, and takeaways. Works on research papers, contracts, reports, articles, and meeting notes. Free users get a two-sentence preview of the first five pages. Pro users get the full summary of up to 50 pages. Files are processed in memory and deleted immediately. No account required for the free preview.',
         related: ['chat-with-pdf', 'extract-data'],
         faq: [
           { q: 'How long does summarization take?', a: 'Most documents are summarized in under 30 seconds. The AI reads the full document before generating a summary.' },
@@ -243,6 +256,7 @@ export const DECKS = [
         pro: true,
         seoTitle: 'Chat with PDF | Ask Your Document Questions with AI — PDFDeck',
         seoDesc: 'Chat with any PDF using AI. Ask questions and get accurate, cited answers. Understand documents faster. Files deleted immediately after your session.',
+        body: 'Ask any question about a PDF and get a direct answer grounded in the document. Useful for contracts where you need a specific clause, research papers where you want a section explained, and reports where you need to locate a figure without reading the whole thing. The AI reads the full document and cites the relevant section so you can verify its answer. Pro feature. Files are processed in memory and deleted immediately after your session ends.',
         related: ['summarize-pdf', 'ocr-pdf'],
         faq: [
           { q: 'How accurate are the answers?', a: 'Answers are generated directly from the document content. The AI cites the relevant section so you can verify the source.' },
@@ -261,6 +275,7 @@ export const DECKS = [
         pro: true,
         seoTitle: 'Extract Data from PDF | AI Invoice & Table Extraction — PDFDeck',
         seoDesc: 'Extract tables and data from PDF invoices and documents using AI. Get structured results as CSV. No sign up. Files deleted immediately.',
+        body: 'Pull structured data out of PDF invoices, receipts, tables, and forms and export it as a CSV ready to open in Excel or Google Sheets. The AI identifies line items, totals, dates, and column structures without needing a template or configuration. Works on scanned invoices as well as digital PDFs, though scan quality affects accuracy. Pro feature. Files are processed in memory and deleted immediately after extraction.',
         related: ['ocr-pdf', 'pdf-to-excel'],
         faq: [
           { q: 'What kinds of data can it extract?', a: 'Invoices, tables, line items, and structured data from any PDF. Output is delivered as a CSV ready to open in Excel or Google Sheets.' },
@@ -279,6 +294,7 @@ export const DECKS = [
         pro: true,
         seoTitle: 'OCR PDF | Extract Text from Scanned PDFs Free — PDFDeck',
         seoDesc: 'Extract text from scanned PDFs and images using OCR. Works on any scanned document or photo. No sign up. Files deleted immediately after processing.',
+        body: 'Extract all readable text from scanned PDFs and images and get it back as plain text you can copy, search, or paste into another document. Accepts both PDF files and images (JPG, PNG, HEIC). Useful for scanned contracts, printed forms, whiteboards, and book pages. Best results come from clear, well-lit scans at 150 DPI or higher. Very faint or distorted text may produce incomplete output. Pro feature. Files are processed in memory and deleted immediately.',
         related: ['extract-data', 'pdf-to-word'],
         faq: [
           { q: 'What if my scan is low quality?', a: 'OCR works best on clear, well-lit scans. Very faint text or low-resolution images may produce incomplete results.' },

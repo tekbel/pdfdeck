@@ -630,6 +630,12 @@ export default function ToolPage() {
         </div>
       )}
 
+      {tool.body && (
+        <section className="tool-body">
+          <p>{tool.body}</p>
+        </section>
+      )}
+
       {relatedTools.length > 0 && (
         <section className="related-tools">
           <h2 className="related-title">Related tools</h2>
