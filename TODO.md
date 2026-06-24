@@ -41,10 +41,11 @@
 
 ## New tools — PDF editing & organization
 
-Inspired by competitor feature set. Build our own versions with a better UX angle.
+Inspired by real Acrobat workflows (editing, signing, annotating, organizing). Build our own versions with a better UX angle.
 
 - [ ] Rotate PDF — rotate individual pages or all pages, with a visual page preview.
 - [ ] Delete PDF pages — remove unwanted pages with a thumbnail picker.
+- [ ] Reorder PDF pages — drag-and-drop page thumbnails to reorder, then export. Missing from current catalog and frequently needed for document assembly.
 - [ ] Number pages — add customizable page numbers (position, font, starting number).
 - [ ] Crop PDF — trim page margins or extract a region.
 - [ ] Redact PDF — black out sensitive text or regions permanently.
@@ -52,11 +53,16 @@ Inspired by competitor feature set. Build our own versions with a better UX angl
 - [ ] Protect PDF — add a password to lock a PDF.
 - [ ] Unlock PDF — remove password from a PDF the user owns.
 - [ ] PDF Form Filler — fill out PDF form fields in the browser, download filled PDF.
+- [ ] E-signature — draw, type, or upload a signature and place it on a PDF. Pro feature. DocuSign charges $15-25/month for this alone; including it in Pro at $6 is a strong differentiator.
+- [ ] PDF Annotator — add highlights, sticky notes, and comments in the browser. Export with annotations baked in. Useful for document review workflows.
+- [ ] Edit PDF text — update text inline without converting to Word. Technically the hardest tool (requires font handling and layout engine). Long-term goal; consider pdf-lib or a WASM-based approach.
+- [ ] Compare PDFs — show a diff between two versions of a document. Useful for contracts and legal review.
 
 ## New tools — more conversions
 
 - [ ] PDF to PowerPoint (PDF to PPT/PPTX).
 - [ ] PowerPoint to PDF (PPT/PPTX to PDF).
+- [ ] Word to PDF (DOCX to PDF) — one of the most searched conversions. CloudConvert supports it.
 - [ ] Excel to PDF.
 - [ ] HTML to PDF — paste a URL or HTML, get a PDF.
 - [ ] TXT to PDF — plain text to formatted PDF.
