@@ -16,7 +16,7 @@
 - [x] Email waitlist subscribers when Pro launches with a direct checkout link.
 - [x] Supabase auth (email + password). Gate AI tools behind session check instead of the current browser cookie. Cookie fallback kept for existing Pro users during transition.
 - [x] Replace in-memory rate limit with Supabase usage tracking keyed by user ID for logged-in users, IP for guests.
-- [ ] Add a weekly cleanup job to delete `pdf_usage` rows older than 7 days (e.g. Supabase scheduled function or Railway cron).
+- [ ] Add a weekly cleanup job to delete `pdf_usage` rows older than 7 days — SQL ready, run in Supabase SQL editor: `select cron.schedule('pdf_usage_weekly_cleanup', '0 3 * * 0', $$delete from pdf_usage where date < current_date - interval '7 days'$$);`
 - [ ] Swap Formspree waitlist for a proper mailing list (Resend, Mailchimp) as volume grows.
 
 ## SEO and discoverability
@@ -43,8 +43,8 @@
 
 Inspired by real Acrobat workflows (editing, signing, annotating, organizing). Build our own versions with a better UX angle.
 
-- [ ] Rotate PDF — rotate individual pages or all pages, with a visual page preview.
-- [ ] Delete PDF pages — remove unwanted pages with a thumbnail picker.
+- [x] Rotate PDF — rotate all pages 90°, 180°, or 270°. Per-page rotation is a future enhancement.
+- [x] Delete PDF pages — remove pages by number or range (e.g. 1, 3, 5-7).
 - [ ] Reorder PDF pages — drag-and-drop page thumbnails to reorder, then export. Missing from current catalog and frequently needed for document assembly.
 - [ ] Number pages — add customizable page numbers (position, font, starting number).
 - [ ] Crop PDF — trim page margins or extract a region.
@@ -77,10 +77,6 @@ Inspired by real Acrobat workflows (editing, signing, annotating, organizing). B
 - [ ] Add a "Why PDFDeck" trust section — privacy stats, no-account pitch, speed proof. Do it better than the generic competitor version (concrete numbers, not vague claims).
 - [ ] Add a brief pricing teaser on the homepage — one line with a "See plans" link, not a full pricing table.
 - [ ] Add app store download buttons to footer once mobile app is live.
-
-## Mobile
-
-- [ ] Build companion mobile app (Flutter, iOS + Android) that mirrors the web tool catalog.
 
 ## Nice to have
 

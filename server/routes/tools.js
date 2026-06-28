@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import multer from 'multer'
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument, degrees } from 'pdf-lib'
 import { isProUser } from './stripe.js'
 import { getSupabaseAdmin } from '../lib/supabase.js'
 import { verifyToken } from '../lib/auth.js'
@@ -424,6 +424,36 @@ router.post('/:slug', rateLimit, upload.array('files', 20), async (req, res) => 
     if (slug === 'compress-image')  return res.json(await compressImage(req.files))
     if (slug === 'resize-image')    return res.json(await resizeImage(req.files, req.body.width, req.body.height))
     if (slug === 'image-converter') return res.json(await convertImage(req.files, req.body.targetFormat))
+    if (slug === 'rotate-pdf') {
+      const angle = [90, 180, 270].includes(Number(req.body.degrees)) ? Number(req.body.degrees) : 90
+      const doc = await PDFDocument.load(req.files[0].buffer, { ignoreEncryption: true })
+      doc.getPages().forEach(p => p.setRotation(degrees((p.getRotation().angle + angle) % 360)))
+      const buf = Buffer.from(await doc.save())
+      return res.json({ downloadUrl: `data:application/pdf;base64,${buf.toString('base64')}` })
+    }
+
+    if (slug === 'delete-pdf-pages') {
+      const raw = (req.body.pageRange || '').trim()
+      if (!raw) return res.status(400).json({ error: 'Specify pages to delete (e.g. 1, 3, 5-7)' })
+      const doc = await PDFDocument.load(req.files[0].buffer, { ignoreEncryption: true })
+      const total = doc.getPageCount()
+      const toDelete = new Set()
+      for (const part of raw.split(',')) {
+        const [a, b] = part.trim().split('-').map(Number)
+        if (b) { for (let i = a; i <= b; i++) toDelete.add(i) }
+        else if (!isNaN(a)) toDelete.add(a)
+      }
+      const invalid = [...toDelete].filter(n => n < 1 || n > total)
+      if (invalid.length) return res.status(400).json({ error: `Page ${invalid[0]} does not exist. This PDF has ${total} pages.` })
+      if (toDelete.size >= total) return res.status(400).json({ error: 'Cannot delete all pages. At least one page must remain.' })
+      const keep = [...Array(total).keys()].map(i => i + 1).filter(n => !toDelete.has(n))
+      const out = await PDFDocument.create()
+      const copied = await out.copyPages(doc, keep.map(n => n - 1))
+      copied.forEach(p => out.addPage(p))
+      const buf = Buffer.from(await out.save())
+      return res.json({ downloadUrl: `data:application/pdf;base64,${buf.toString('base64')}` })
+    }
+
     if (CC_CONVERT[slug]) return res.json(await convertFile(slug, req.files))
 
     return res.status(501).json({ error: `${slug} is coming soon` })

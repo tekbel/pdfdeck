@@ -218,6 +218,7 @@ export default function ToolPage() {
   const [resizeWidth, setResizeWidth] = useState('')
   const [resizeHeight, setResizeHeight] = useState('')
   const [question, setQuestion] = useState('')
+  const [rotateDegrees, setRotateDegrees] = useState('90')
   const [isPro, setIsPro] = useState(null)
   const [pageConfirm, setPageConfirm] = useState(null)
 
@@ -366,6 +367,8 @@ export default function ToolPage() {
       files.forEach(f => body.append('files', f))
       if (slug === 'image-converter') body.append('targetFormat', imageFormat)
       if (slug === 'split-pdf' && pageRange.trim()) body.append('pageRange', pageRange.trim())
+      if (slug === 'delete-pdf-pages' && pageRange.trim()) body.append('pageRange', pageRange.trim())
+      if (slug === 'rotate-pdf') body.append('degrees', rotateDegrees)
       if (slug === 'chat-with-pdf') body.append('question', question.trim())
       if (slug === 'resize-image') {
         if (resizeWidth)  body.append('width', resizeWidth)
@@ -426,6 +429,23 @@ export default function ToolPage() {
       <h1>{tool.name}</h1>
       <p className="tool-sub">{tool.desc}</p>
 
+      {tool.hint && (
+        <div className="tool-hint">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ flexShrink: 0, marginTop: 1 }}>
+            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M8 7v4M8 5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          <span>
+            {tool.hintTool
+              ? tool.hint.split('Extract Data').reduce((acc, part, i) => i === 0
+                  ? [part]
+                  : [...acc, <Link key={i} to={`/${tool.hintTool}`} style={{ color: 'inherit', fontWeight: 600, textDecoration: 'underline' }}>Extract Data</Link>, part],
+                [])
+              : tool.hint}
+          </span>
+        </div>
+      )}
+
       <div
         className={`dropzone ${drag ? 'dragover' : ''}`}
         onClick={() => inputRef.current?.click()}
@@ -482,6 +502,39 @@ export default function ToolPage() {
             onChange={e => setPageRange(e.target.value)}
           />
           <span className="page-range-hint">Required. e.g. 1-3 extracts pages 1 to 3. Use commas for non-consecutive pages: 1, 4, 7-9</span>
+        </div>
+      )}
+
+      {slug === 'delete-pdf-pages' && (
+        <div className="page-range-wrap">
+          <label htmlFor="page-range">Pages to delete</label>
+          <input
+            id="page-range"
+            className="page-range-input"
+            type="text"
+            placeholder="e.g. 1, 3, 5-7"
+            value={pageRange}
+            onChange={e => setPageRange(e.target.value)}
+          />
+          <span className="page-range-hint">Required. e.g. 1, 3, 5-7 deletes pages 1, 3, 5, 6, and 7.</span>
+        </div>
+      )}
+
+      {slug === 'rotate-pdf' && (
+        <div className="page-range-wrap">
+          <label>Rotation</label>
+          <div className="rotate-options">
+            {[['90', '90° clockwise'], ['180', '180°'], ['270', '90° counter-clockwise']].map(([val, label]) => (
+              <button
+                key={val}
+                className={`rotate-btn${rotateDegrees === val ? ' active' : ''}`}
+                onClick={() => setRotateDegrees(val)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
