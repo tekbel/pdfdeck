@@ -77,6 +77,26 @@ const ICONS = {
     </Svg>
   ),
 
+  'rotate-pdf': () => (
+    <Svg stroke>
+      <Doc x={4} y={3} w={10} fold={3} op={0.9} />
+      <path d="M15 2.5a8 8 0 11-6-2" stroke="white" strokeWidth="1.7"
+        strokeLinecap="round" fill="none" />
+      <path d="M9 0.5l3.5 2.5-3.5 2" stroke="white" strokeWidth="1.7"
+        strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </Svg>
+  ),
+
+  'delete-pdf-pages': () => (
+    <Svg stroke>
+      <Doc x={3} y={1} w={10} fold={3} op={0.9} />
+      <path d="M5 14h10M7.5 14v4h5v-4" stroke="white" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 11v3M11 11v3" stroke="white" strokeWidth="1.4"
+        strokeLinecap="round" strokeOpacity="0.7" />
+    </Svg>
+  ),
+
   'pdf-to-jpg': () => (
     <Svg>
       {/* Image frame */}

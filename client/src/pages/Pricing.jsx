@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { supabase, getProStatus } from '../lib/supabase.js'
 
 const FEATURES_FREE = [
   '12 PDF and image tools',
@@ -34,7 +35,15 @@ function ManageButton() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/stripe/portal', { method: 'POST' })
+      const { data: { session } } = await supabase.auth.getSession()
+      const authHeader = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {}
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        credentials: 'include',
+      })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Something went wrong.')
       window.location.href = data.url
@@ -92,10 +101,7 @@ export default function Pricing() {
   const [isPro, setIsPro] = useState(null)
 
   useEffect(() => {
-    fetch('/api/pro/status')
-      .then(r => r.json())
-      .then(d => setIsPro(d.pro === true))
-      .catch(() => setIsPro(false))
+    getProStatus().then(setIsPro).catch(() => setIsPro(false))
   }, [])
 
   return (

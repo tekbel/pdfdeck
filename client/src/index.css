@@ -707,10 +707,24 @@ button { font-family: inherit; cursor: pointer; }
 .footer-tool-list a:hover { color: var(--ink-dim); }
 
 .footer-copy {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   padding-top: 20px;
   font-size: 12px;
   color: var(--ink-faint);
 }
+
+.footer-addisstack {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.footer-addisstack:hover { opacity: 1; }
 
 @media (max-width: 900px) {
   .footer-top {

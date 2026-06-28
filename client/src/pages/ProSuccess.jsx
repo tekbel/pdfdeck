@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { supabase } from '../lib/supabase.js'
 
 export default function ProSuccess() {
   const [searchParams] = useSearchParams()
@@ -19,18 +20,25 @@ export default function ProSuccess() {
 
     if (!sessionId) { setStatus('error'); return }
 
-    fetch('/api/stripe/verify-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ sessionId }),
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const authHeader = session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {}
+      return fetch('/api/stripe/verify-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        credentials: 'include',
+        body: JSON.stringify({ sessionId }),
+      })
     })
       .then(r => r.json())
       .then(data => {
         if (!data.ok) { setStatus('error'); return }
         setStatus('ok')
         if (destination) {
-          redirectTimer.current = setTimeout(() => navigate(destination), 2500)
+          redirectTimer.current = setTimeout(() => { window.location.href = destination }, 2500)
+        } else {
+          redirectTimer.current = setTimeout(() => { window.location.href = '/' }, 4000)
         }
       })
       .catch(() => setStatus('error'))

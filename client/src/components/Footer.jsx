@@ -37,7 +37,8 @@ export default function Footer() {
       </div>
 
       <div className="container footer-copy">
-        © 2026 PDF Deck. Files processed in memory and never stored on our servers.
+        <span>© 2026 PDF Deck. Files processed in memory and never stored on our servers.</span>
+        <span>Built by <a href="https://addisstack.com" target="_blank" rel="noopener noreferrer" className="footer-addisstack">AddisStack</a></span>
       </div>
     </footer>
   )

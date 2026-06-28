@@ -4,8 +4,9 @@ import { DECKS, toolHref } from '../lib/tools.js'
 import { ToolIcon } from '../lib/icons.jsx'
 import Logo from './Logo.jsx'
 import { useAuth } from '../hooks/useAuth.js'
+import { getProStatus } from '../lib/supabase.js'
 
-function AccountDropdown({ user, onLogout, onClose }) {
+function AccountDropdown({ user, isPro, onLogout, onClose }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -19,13 +20,23 @@ function AccountDropdown({ user, onLogout, onClose }) {
   return (
     <div className="account-dropdown" ref={ref}>
       <div className="account-dropdown-email">{user.email}</div>
-      <Link to="/pricing" className="account-dropdown-item" onClick={onClose}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <rect x="2" y="9" width="12" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
-          <path d="M5 9V6a3 3 0 016 0v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-        </svg>
-        Manage subscription
-      </Link>
+      {isPro ? (
+        <Link to="/pricing" className="account-dropdown-item" onClick={onClose}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="2" y="9" width="12" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+            <path d="M5 9V6a3 3 0 016 0v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+          Manage subscription
+        </Link>
+      ) : (
+        <Link to="/pricing" className="account-dropdown-item" onClick={onClose}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M8 2v9M4 6l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          Upgrade to Pro
+        </Link>
+      )}
       <div className="account-dropdown-divider" />
       <button className="account-dropdown-item account-dropdown-signout" onClick={onLogout}>
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -118,9 +129,15 @@ export default function Navbar() {
   const [megaOpen, setMegaOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [isPro, setIsPro] = useState(false)
   const closeTimer = useRef(null)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!user) { setIsPro(false); return }
+    getProStatus().then(setIsPro).catch(() => {})
+  }, [user])
 
   const open  = () => { clearTimeout(closeTimer.current); setMegaOpen(true) }
   const close = () => { closeTimer.current = setTimeout(() => setMegaOpen(false), 180) }
@@ -179,6 +196,7 @@ export default function Navbar() {
                 {accountOpen && (
                   <AccountDropdown
                     user={user}
+                    isPro={isPro}
                     onLogout={handleLogout}
                     onClose={closeAccount}
                   />

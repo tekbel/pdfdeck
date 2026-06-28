@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { DECKS, ALL_TOOLS, toolHref } from '../lib/tools.js'
+import { getProStatus } from '../lib/supabase.js'
 import { ToolIcon } from '../lib/icons.jsx'
 
 const FEATURES = [
@@ -75,10 +76,7 @@ export default function Home() {
   const [isPro, setIsPro] = useState(false)
 
   useEffect(() => {
-    fetch('/api/pro/status')
-      .then(r => r.json())
-      .then(d => setIsPro(d.pro === true))
-      .catch(() => {})
+    getProStatus().then(setIsPro).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -137,16 +135,16 @@ export default function Home() {
     <main ref={mainRef}>
       <Helmet>
         <title>PDFDeck | Every PDF and file tool, one place</title>
-        <meta name="description" content="Convert, compress, merge, split, and understand your files in seconds. 16 free PDF and image tools. No account needed. Files deleted immediately after processing." />
+        <meta name="description" content="Convert, compress, merge, split, and understand your files in seconds. 18 free PDF and image tools. No account needed. Files deleted immediately after processing." />
         <link rel="canonical" href="https://pdfdeck.app/" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="PDFDeck | Every PDF and file tool, one place" />
-        <meta property="og:description" content="Convert, compress, merge, split, and understand your files in seconds. 16 free PDF and image tools. No account needed. Files deleted immediately after processing." />
+        <meta property="og:description" content="Convert, compress, merge, split, and understand your files in seconds. 18 free PDF and image tools. No account needed. Files deleted immediately after processing." />
         <meta property="og:url" content="https://pdfdeck.app/" />
         <meta property="og:image" content="https://pdfdeck.app/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="PDFDeck | Every PDF and file tool, one place" />
-        <meta name="twitter:description" content="Convert, compress, merge, split, and understand your files in seconds. 16 free PDF and image tools. No account needed." />
+        <meta name="twitter:description" content="Convert, compress, merge, split, and understand your files in seconds. 18 free PDF and image tools. No account needed." />
         <meta name="twitter:image" content="https://pdfdeck.app/og-image.png" />
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',

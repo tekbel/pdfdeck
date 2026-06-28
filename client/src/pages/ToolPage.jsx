@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { findTool, ALL_TOOLS } from '../lib/tools.js'
+import { getProStatus } from '../lib/supabase.js'
 import { useToast } from '../components/Toast.jsx'
 
 const Breadcrumb = () => (
@@ -224,10 +225,7 @@ export default function ToolPage() {
 
   useEffect(() => {
     if (!tool?.pro && !tool?.ai) return
-    fetch('/api/pro/status')
-      .then(r => r.json())
-      .then(d => setIsPro(d.pro === true))
-      .catch(() => setIsPro(false))
+    getProStatus().then(setIsPro).catch(() => setIsPro(false))
   }, [tool?.pro, tool?.ai])
 
   const pageTitle = tool ? (tool.seoTitle || `${tool.name} | PDF Deck`) : 'PDF Deck'
